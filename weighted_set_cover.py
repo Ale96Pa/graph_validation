@@ -41,8 +41,8 @@ class PriorityQueue:
     def __len__(self):
         return len(self._entry_map)
 
-# Dummy weighted set cover with no heuristics
-def no_heuristic(universe, sets, weights):
+# Weighted set cover with no heuristic and optimal solution
+def heuristic_0(universe, sets, weights):
     # lista per mantenere traccia dei set selezionati
     selected_sets = []
     # lista per mantenere traccia degli elementi del universo coperti
@@ -111,6 +111,6 @@ if __name__ == "__main__":
     universe = set([1, 2, 3, 4, 5])
     sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
     weights = [2, 1, 3, 2]
-    selected_sets, total_weight = no_heuristic(universe, sets, weights)
+    selected_sets, total_weight = heuristic_0(universe, sets, weights)
     print("Selected sets:", selected_sets)
     print("Total weight:", total_weight)
