@@ -43,8 +43,13 @@ def generate_graph(numNodes):
 if __name__ == "__main__":
     
     for n in test:
-        start = time.time()
         G, m, s = generate_graph(n)
+
+        start = time.time()
+        # esegui algoritmo stato dell'arte su G
+        end = time.time()
+        start = time.time()
+        # esegui algoritmo nostro su G
         end = time.time()
         print(end - start)
     
