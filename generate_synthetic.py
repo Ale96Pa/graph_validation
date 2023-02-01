@@ -8,7 +8,7 @@ import time
 test = [5,10,25,50,100,150,250]
 
 def generate_graph(numNodes):
-    metrics = random.sample(range(0, numNodes*2), numNodes)
+    metrics = random.sample(range(1, numNodes*2), numNodes)
     meas_settings = random.sample(range(numNodes*2+1, numNodes*4), numNodes)
     instruments = random.sample(range(numNodes*4+1, numNodes*6), numNodes)
     specifications = random.sample(range(numNodes*6+1, numNodes*8), numNodes)
@@ -38,13 +38,13 @@ def generate_graph(numNodes):
     #         color_map.append('yellow')
     # nx.draw(B, node_color=color_map, with_labels=True)
     # plt.show()
-    return B
+    return B, metrics, specifications
 
 if __name__ == "__main__":
     
     for n in test:
         start = time.time()
-        G = generate_graph(n)
+        G, m, s = generate_graph(n)
         end = time.time()
         print(end - start)
     
