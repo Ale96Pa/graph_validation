@@ -45,7 +45,7 @@ def correctnessMGM(MGM,outputFile,pos):
 
 	for inp in vIN:
 		if MGM.out_degree(inp) == 0:
-			print(inp,MGM.out_degree(inp))
+			# print(inp,MGM.out_degree(inp))
 			wrongIN = wrongIN.union({inp})
 			wrongCL = wrongCL.union(set([edge[0] for edge in MGM.in_edges(inp) ]))
 
@@ -72,7 +72,7 @@ def correctnessMGM(MGM,outputFile,pos):
 		if MGM.in_degree(src) == 0:
 			MGM.remove_node(src)
 
-	drawGraph(MGM, outputFile,pos,)
+	#drawGraph(MGM, outputFile,pos,)
 	return MGM
 
 
@@ -142,8 +142,8 @@ def exeMinSetCoverV1(MGM,results={}):
 
 	listOfCovCluster = [listOfClusters[el] for el in I]
 
-	print('[V1] METRICS COV: {}'.format(len(listOfCovMetrics)), '\t/\tALL METRICS: {}'.format(len(listOfMetrics)))
-	print('[V1] MIN CLUSTERS COV: {}'.format(len(listOfCovCluster)), '\t/\tALL CLASTERS: {}'.format(len(listOfClusters)))
+	# print('[V1] METRICS COV: {}'.format(len(listOfCovMetrics)), '\t/\tALL METRICS: {}'.format(len(listOfMetrics)))
+	# print('[V1] MIN CLUSTERS COV: {}'.format(len(listOfCovCluster)), '\t/\tALL CLASTERS: {}'.format(len(listOfClusters)))
 	results['M_T']= str(len(listOfMetrics))
 	results['M_C']= str(len(listOfCovMetrics))
 	results['C_T']= str(len(listOfClusters))
@@ -180,10 +180,10 @@ def exeMinSetCoverV2(MGM,listOfCovCluster,results={}):
 
 	covGraph_v2 = MGM.subgraph(listOfCovMetrics+listOfCovCluster+listOfCovInput)
 
-	if len(listOfCovInput) > 9:
-		print('[V2] MIN INPUTS COV: {}'.format(len(listOfCovInput)), '\t/\tALL INPUTS: {}'.format(len(listOfInputs)))
-	else:
-		print('[V2] MIN INPUTS COV: {}'.format(len(listOfCovInput)), '\t\t/\tALL INPUTS: {}'.format(len(listOfInputs)))
+	# if len(listOfCovInput) > 9:
+	# 	print('[V2] MIN INPUTS COV: {}'.format(len(listOfCovInput)), '\t/\tALL INPUTS: {}'.format(len(listOfInputs)))
+	# else:
+	# 	print('[V2] MIN INPUTS COV: {}'.format(len(listOfCovInput)), '\t\t/\tALL INPUTS: {}'.format(len(listOfInputs)))
 
 	
 	results['I_T']= str(len(listOfInputs)+6)
@@ -192,7 +192,7 @@ def exeMinSetCoverV2(MGM,listOfCovCluster,results={}):
 	return listOfCovInput,covGraph_v2,results
 
 def MGMminSetCover(MGM,outputFile,pos,draw=True,saveFig=True,color=True,show=False):
-	print('START TASK: MGMminSetCover()')
+	# print('START TASK: MGMminSetCover()')
 	st = time.time()
 	
 	results = {}
@@ -221,11 +221,11 @@ def MGMminSetCover(MGM,outputFile,pos,draw=True,saveFig=True,color=True,show=Fal
 
 	# get the execution time
 	elapsed_time = et - st
-	print('Execution time:', elapsed_time, 'seconds')
-	print(results)
+	# print('Execution time:', elapsed_time, 'seconds')
+	# print(results)
 
 
-	print('DRAWING THE GRAPS...')
+	# print('DRAWING THE GRAPS...')
 
 	if draw:
 		drawGraph(MGM, outputFile_BASE,pos,saveFig=saveFig,show=show)
@@ -234,6 +234,6 @@ def MGMminSetCover(MGM,outputFile,pos,draw=True,saveFig=True,color=True,show=Fal
 		drawGraph(covGraph_v3, outputFile_COMPLETE,pos,saveFig=saveFig,show=show)
 	
 
-	print('END TASK: MGMminSetCover()')
-	print('----------------------------------------')
+	# print('END TASK: MGMminSetCover()')
+	# print('----------------------------------------')
 	return results

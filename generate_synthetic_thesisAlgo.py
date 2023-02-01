@@ -16,7 +16,7 @@ test = [5,10,25,50,100,150]
 
 def generate_graph(numNodes,draw=False):
     
-    metrics = prepend(random.sample(range(0, numNodes*2), numNodes),'M')
+    metrics = prepend(random.sample(range(1, numNodes*2), numNodes),'M')
     meas_settings = prepend(random.sample(range(numNodes*2+1, numNodes*4), numNodes),'CL')
     instruments = prepend(random.sample(range(numNodes*4+1, numNodes*6), numNodes),'I')
     specifications = prepend(random.sample(range(numNodes*6+1, numNodes*8), numNodes),'S')
@@ -49,7 +49,7 @@ def generate_graph(numNodes,draw=False):
         plt.show()  
     
     nx.write_gpickle(B, "test_"+str(numNodes)+".gpickle")
-    return B  
+    return B, metrics, meas_settings, instruments, specifications
 
 if __name__ == "__main__":
     
