@@ -12,11 +12,18 @@ def min_set_cover(universe, subsets):
         if covered == universe:
             break
 
-    return covering
+    res = []
+    for elem in covering:
+        st = "("
+        for e in list(elem):
+            st+=str(e)+" "
+        st+=")"
+        res.append(st)
+    return res#covering
 
 if __name__ == "__main__":
     universe = [1, 2, 3, 4, 5]
-    subsets = [    [1, 2, 3],
+    subsets = [[1, 2, 3],
         [2, 4],
         [3, 5],
         [1, 4, 5],
