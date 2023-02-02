@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from random import randint
 
 def genPosNodes(G,prt=False):
 	if prt:
@@ -70,3 +71,28 @@ def drawGraph(G,outputFileName,pos,saveFig=True,show=False,fontSize=5,nodeSize=4
 		plt.show()
 
 	print('END Draw phase')
+
+
+def getListOfMetrics(G):
+	metrics = []
+
+	for node in G.nodes():
+		if 'CL' in node:
+			#questo è il controllo per prendere tutti i nodi cluster
+			#e da quelli estrarre la lista di metriche
+			nodes = [edge[0] for edge in G.in_edges(node)]	
+			metrics.append(nodes)
+	
+	#print(metrics)
+	return metrics
+
+def getCostClList(G):
+	costList = []
+	weight = nx.get_node_attributes(G, "weight")
+	for key, val in weight.items():
+		costList.append(val)
+
+	#print(costList)
+	return costList
+
+	
