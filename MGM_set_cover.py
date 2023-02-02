@@ -73,7 +73,7 @@ def correctnessMGM(MGM,outputFile,pos):
 			MGM.remove_node(src)
 
 	#drawGraph(MGM, outputFile,pos,)
-	return MGM
+	return True #TODO:modificare
 
 
 #create X from edge to respect the paper S is a subSet of X

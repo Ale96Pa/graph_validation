@@ -8,9 +8,11 @@ import weighted_set_cover as wsc
 import sat
 import MGM_set_cover as mgm
 import generate_synthetic_thesisAlgo as tt
+import csv
 
-test = [5,10,25,50,100,150,250]
-solvers = ['cdl','gc41','g41','m22','maple','lgl']
+
+test = [0,5,10,25,50,100,150,250,500,1000, 2000, 3000, 4000]
+solvers = ['g41','m22','maple','lgl']
 
 def generate_graph(numNodes):
     metrics = random.sample(range(1, numNodes*2), numNodes)
@@ -59,35 +61,59 @@ def generate_graph(numNodes):
     return B, metrics, meas_settings, instruments, specifications
 
 
-def experiment_sat(G, formulaG):
-    for s in solvers:
-        start = time.time()
-        sat.solve_sat(formulaG,s)
-        end = time.time()
-        print("Solver: ", s)
-        print(end - start)
-    
-    start = time.time()
-    mgm.correctnessMGM(G,"null","null")
-    end = time.time()
-    print("HEURISTIC-SAT: ")
-    print(end - start)
+def init_file(filename,head):
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(head)
 
+def experiment_sat(G, formulaG, filename):
+    num_nodes = len(G.nodes())
+    num_edges = len(G.edges())
+    
+    with open(filename, 'a', newline='') as file:
+        writer = csv.writer(file)
+        
+        start = time.time()
+        result = sat.solve_sat(formulaG,'cdl')
+        end = time.time()
+        writer.writerow(['cdl',num_nodes,num_edges,end-start,1])
+
+        for s in solvers:
+            start = time.time()
+            r = sat.solve_sat(formulaG,s)
+            end = time.time()
+            if r == result: res=1
+            else: res=0
+            writer.writerow([s,num_nodes,num_edges,end-start,res])
+        
+        start = time.time()
+        r = mgm.correctnessMGM(G,None,None)
+        end = time.time()
+        if r == result: res=1
+        else: res=0
+        writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
+        
+def experiment_wsc(G, set_data, filename):
+    print()
 
 
 if __name__ == "__main__":
+
+    filesat = 'sat.csv'
+    init_file(filesat, ["name","nodes","edges","time","results"])
     
     for n in test:
         # Graph
         # G, m, c, i, s = generate_graph(n)
         G, m, c, i, s = tt.generate_graph(n)
 
-        # Weighted setd from the graph
-
         # CNF formula from the graph
         formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+        experiment_sat(G, formulaG, filesat)
 
-        experiment_sat(G, formulaG)
+        # Weighted setd from the graph
+        set_data = []
+        experiment_wsc(G, set_data, filesat)
+        print(n)
 
-        print("--------------------")
     

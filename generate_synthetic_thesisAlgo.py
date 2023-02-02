@@ -48,7 +48,7 @@ def generate_graph(numNodes,draw=False):
         nx.draw(B, node_color=color_map, with_labels=True)
         plt.show()  
     
-    nx.write_gpickle(B, "test_"+str(numNodes)+".gpickle")
+    # nx.write_gpickle(B, "test_"+str(numNodes)+".gpickle")
     return B, metrics, meas_settings, instruments, specifications
 
 if __name__ == "__main__":
