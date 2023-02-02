@@ -5,6 +5,8 @@ import random
 import itertools
 import time
 
+from MGM_set_cover import MGMminSetCover 
+
 def prepend(list, str):
  
     # Using format()
@@ -12,7 +14,7 @@ def prepend(list, str):
     list = [str.format(i) for i in list]
     return(list)
 
-test = [5,10,25,50,100,150]
+test = [5,10,25,50,100,150,250,500,1000,2000,5000,10000]
 
 def generate_graph(numNodes,draw=False):
     
@@ -34,27 +36,12 @@ def generate_graph(numNodes,draw=False):
     B.add_edges_from(e_ci)
     B.add_edges_from(e_is)
 
-    if draw:
-        color_map = []
-        for node in B:
-            if 'M' in node:
-                color_map.append('blue')
-            elif 'C' in node: 
-                color_map.append('green')
-            elif 'I' in node:
-                color_map.append('red')
-            else:
-                color_map.append('yellow')
-        nx.draw(B, node_color=color_map, with_labels=True)
-        plt.show()  
-    
-    nx.write_gpickle(B, "test_"+str(numNodes)+".gpickle")
+    #nx.write_gpickle(B, "test_"+str(numNodes)+".gpickle")
     return B, metrics, meas_settings, instruments, specifications
 
 if __name__ == "__main__":
     
     for n in test:
-        start = time.time()
-        generate_graph(n)
-        end = time.time()
-        print(end - start)
+        B, metrics, meas_settings, instruments, specifications = generate_graph(n)
+        outputFile='output/MGM_'+str(n)+'.pdf'
+        MGMminSetCover(B,outputFile,draw=False,saveFig=False)
