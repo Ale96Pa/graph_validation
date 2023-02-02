@@ -23,5 +23,4 @@ if __name__ == "__main__":
     ]
 
     minimal_covering = min_set_cover(universe, subsets)
-
     print("Minimal Covering:", minimal_covering)

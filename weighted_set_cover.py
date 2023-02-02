@@ -109,8 +109,15 @@ if __name__ == "__main__":
     print("cost:", cost)
 
     universe = set([1, 2, 3, 4, 5])
-    sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
+    # sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
+    f = []
+    for s in S:       
+        f1 = set()
+        f1.update(s)
+        f.append(f1)
+    print(f)
+
     weights = [2, 1, 3, 2]
-    selected_sets, total_weight = heuristic_0(universe, sets, weights)
+    selected_sets, total_weight = heuristic_0(universe, f, weights)
     print("Selected sets:", selected_sets)
     print("Total weight:", total_weight)

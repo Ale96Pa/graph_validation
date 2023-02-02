@@ -9,6 +9,7 @@ import sat
 import MGM_set_cover as mgm
 import generate_synthetic_thesisAlgo as tt
 import csv
+import tools
 
 
 test = [0,5,10,25,50,100,150,250,500,1000, 2000, 3000, 4000]
@@ -93,27 +94,55 @@ def experiment_sat(G, formulaG, filename):
         else: res=0
         writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
         
-def experiment_wsc(G, set_data, filename):
-    print()
+def experiment_wsc(G, metrics, set_data, set_cost, filename):
+    num_nodes = len(G.nodes())
+    num_edges = len(G.edges())
+    
+    with open(filename, 'a', newline='') as file:
+        writer = csv.writer(file)
+    
+        # set_data_t = []
+        # for s in set_data:       
+        #     set_data_t.append(set(s))
+        # start = time.time()
+        # res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t,set_cost)
+        # end = time.time()
+        # writer.writerow(["h0",num_nodes,num_edges,end-start,res_set, res_w])
+        # print("h0")
+
+        start = time.time()
+        res_set, res_w = wsc.heuristic_1(set_data,set_cost)
+        print(res_set)
+        end = time.time()
+        writer.writerow(["h1",num_nodes,num_edges,end-start,res_set, res_w])
+
+        start = time.time()
+        res= tt.MGMminSetCover(G,None)
+        end = time.time()
+        # print(res)
+        writer.writerow(["mmg",num_nodes,num_edges,end-start,res_set, res_w])
 
 
 if __name__ == "__main__":
 
     filesat = 'sat.csv'
+    filewsc = "wsc.csv"
     init_file(filesat, ["name","nodes","edges","time","results"])
+    init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
     
     for n in test:
         # Graph
         # G, m, c, i, s = generate_graph(n)
         G, m, c, i, s = tt.generate_graph(n)
 
-        # CNF formula from the graph
-        formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-        experiment_sat(G, formulaG, filesat)
+        # # CNF formula from the graph
+        # formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+        # experiment_sat(G, formulaG, filesat)
 
         # Weighted setd from the graph
-        set_data = []
-        experiment_wsc(G, set_data, filesat)
+        set_data = tools.getListOfMetrics(G)
+        set_cost = tools.getCostClList(G)
+        experiment_wsc(G, m, set_data, set_cost, filewsc)
         print(n)
 
     
