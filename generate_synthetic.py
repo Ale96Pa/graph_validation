@@ -162,7 +162,6 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
         start = time.time()
         res= tt.MGMminSetCover(MGM_G,None)
         end = time.time()
-        # print(res)
         writer.writerow(["mmg",num_nodes,num_edges,end-start,res_set, res_w])
 
 def experiment_msc(G, MGM_G, metrics, set_data, filename):
@@ -204,11 +203,12 @@ if __name__ == "__main__":
         #experiment_sat(G, formulaG, filesat)
 
         # Set from the graph
-        set_data = tools.getListOfMetrics(MGM)
+        set_data = tools.getListOfMetricsByCluster(MGM)
+        m = [x for x in MGM.nodes if 'M' in x]
         experiment_msc(G, MGM, m, set_data, filemsc)
 
         # Weighted set from the graph
-        set_cost = tools.getCostClList(G)
+        set_cost = tools.getCostClList(MGM)
         experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
         print(n)
 

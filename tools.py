@@ -87,6 +87,17 @@ def getListOfMetrics(G):
 	metrics	=	list(metrics)
 	return metrics
 
+def getListOfMetricsByCluster(G):
+	m = []
+	for node in G.nodes():
+		if 'CL' in node:
+			nodes = [edge[0] for edge in G.in_edges(node)]
+			m.append(nodes)
+	
+	return m
+
+
+
 def getCostClList(G):
 	costList = []
 	weight = nx.get_node_attributes(G, "weight")
