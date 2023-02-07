@@ -2,11 +2,13 @@ import networkx as nx
 from networkx.algorithms import bipartite
 import matplotlib.pyplot as plt
 import random
+from random import randint
 import itertools
 import time
 import weighted_set_cover as wsc
 import min_set_cover as msc
-import sat
+#import sat
+
 import MGM_set_cover as mgm
 import generate_synthetic_thesisAlgo as tt
 import csv
@@ -15,6 +17,11 @@ import tools
 
 test = [0,5,10,25,50,100,150,250,500,1000, 2000, 3000, 4000]
 solvers = ['g41','m22','maple','lgl']
+
+def prepend(list, str):
+	str += '{0}'
+	list = [str.format(i) for i in list]
+	return(list)
 
 def generate_graph(numNodes):
     metrics = random.sample(range(1, numNodes*2), numNodes)
@@ -25,6 +32,10 @@ def generate_graph(numNodes):
     e_mc = random.sample(list(itertools.product(metrics,meas_settings)), numNodes*2)
     e_ci = random.sample(list(itertools.product(meas_settings,instruments)), numNodes*2)
     e_is = random.sample(list(itertools.product(instruments,specifications)), numNodes*2)
+    
+    
+
+
 
     # e_mc = []
     # e_ci = []
@@ -47,6 +58,38 @@ def generate_graph(numNodes):
     B.add_edges_from(e_ci)
     B.add_edges_from(e_is)
 
+    #--------------------------#
+
+    metrics = prepend(metrics,'M')
+    meas_settings = prepend(meas_settings,'CL')
+    instruments = prepend(instruments,'I')
+    specifications = prepend(specifications,'S')
+
+    ee_mc = []
+    ee_ci = []
+    ee_is = []
+    for x in e_mc:
+        ee_mc.append(('M'+str(x[0]),'CL'+str(x[1])))
+    for x in e_ci:
+        ee_ci.append(('CL'+str(x[0]),'I'+str(x[1])))
+    for x in e_is:
+        ee_is.append(('I'+str(x[0]),'S'+str(x[1])))
+
+
+    MGM = nx.DiGraph()
+    MGM.add_nodes_from(metrics, bipartite=0)
+    for cl in meas_settings:
+        cost = randint(1, 100)
+        MGM.add_node(cl, weight=cost, bipartite=1)
+    MGM.add_nodes_from(instruments, bipartite=2)
+    MGM.add_nodes_from(specifications, bipartite=3)
+    MGM.add_edges_from(ee_mc)
+    MGM.add_edges_from(ee_ci)
+    MGM.add_edges_from(ee_is)
+
+
+    #--------------------------#
+
     # color_map = []
     # for node in B:
     #     if node <= numNodes*2:
@@ -60,7 +103,7 @@ def generate_graph(numNodes):
     # nx.draw(B, node_color=color_map, with_labels=True)
     # plt.show()
 
-    return B, metrics, meas_settings, instruments, specifications
+    return B, MGM, metrics, meas_settings, instruments, specifications
 
 
 def init_file(filename,head):
@@ -68,7 +111,7 @@ def init_file(filename,head):
         writer = csv.writer(file)
         writer.writerow(head)
 
-def experiment_sat(G, formulaG, filename):
+def experiment_sat(G, MGM_G, formulaG, filename):
     num_nodes = len(G.nodes())
     num_edges = len(G.edges())
     
@@ -89,13 +132,13 @@ def experiment_sat(G, formulaG, filename):
             writer.writerow([s,num_nodes,num_edges,end-start,res])
         
         start = time.time()
-        r = mgm.correctnessMGM(G,None,None)
+        r = mgm.correctnessMGM(MGM_G,None,None)
         end = time.time()
         if r == result: res=1
         else: res=0
         writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
         
-def experiment_wsc(G, metrics, set_data, set_cost, filename):
+def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
     num_nodes = len(G.nodes())
     num_edges = len(G.edges())
     
@@ -117,12 +160,12 @@ def experiment_wsc(G, metrics, set_data, set_cost, filename):
         writer.writerow(["h1",num_nodes,num_edges,end-start,res_set, res_w])
 
         start = time.time()
-        res= tt.MGMminSetCover(G,None)
+        res= tt.MGMminSetCover(MGM_G,None)
         end = time.time()
         # print(res)
         writer.writerow(["mmg",num_nodes,num_edges,end-start,res_set, res_w])
 
-def experiment_msc(G, metrics, set_data, filename):
+def experiment_msc(G, MGM_G, metrics, set_data, filename):
     num_nodes = len(G.nodes())
     num_edges = len(G.edges())
     
@@ -135,7 +178,7 @@ def experiment_msc(G, metrics, set_data, filename):
         writer.writerow(["msc",num_nodes,num_edges,end-start,"todo1"])
 
         start = time.time()
-        res = tt.MGMminSetCover(G,None)
+        res = tt.MGMminSetCover(MGM_G,None)
         end = time.time()
         writer.writerow(["mmg",num_nodes,num_edges,end-start,"todo2"])
 
@@ -153,19 +196,20 @@ if __name__ == "__main__":
     for n in test:
         # Graph
         # G, m, c, i, s = generate_graph(n)
-        G, m, c, i, s = tt.generate_graph(n)
+        G, MGM, m, c, i, s = generate_graph(n)
+        
 
         # CNF formula from the graph
-        formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-        experiment_sat(G, formulaG, filesat)
+        #formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+        #experiment_sat(G, formulaG, filesat)
 
         # Set from the graph
-        set_data = tools.getListOfMetrics(G)
-        experiment_msc(G, m, set_data, filemsc)
+        set_data = tools.getListOfMetrics(MGM)
+        experiment_msc(G, MGM, m, set_data, filemsc)
 
         # Weighted set from the graph
         set_cost = tools.getCostClList(G)
-        experiment_wsc(G, m, set_data, set_cost, filewsc)
+        experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
         print(n)
 
     

@@ -74,16 +74,17 @@ def drawGraph(G,outputFileName,pos,saveFig=True,show=False,fontSize=5,nodeSize=4
 
 
 def getListOfMetrics(G):
-	metrics = []
+	metrics = set({})
 
 	for node in G.nodes():
 		if 'CL' in node:
 			#questo è il controllo per prendere tutti i nodi cluster
 			#e da quelli estrarre la lista di metriche
-			nodes = [edge[0] for edge in G.in_edges(node)]	
-			metrics.append(nodes)
+			nodes = [edge[0] for edge in G.in_edges(node)]
+			nodes = set(nodes)
+			metrics.union(nodes)
 	
-	#print(metrics)
+	metrics	=	list(metrics)
 	return metrics
 
 def getCostClList(G):

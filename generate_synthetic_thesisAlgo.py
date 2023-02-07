@@ -30,12 +30,12 @@ def generate_graph(numNodes,draw=False):
     e_ci = random.sample(list(itertools.product(meas_settings,instruments)), numNodes*3)
     e_is = random.sample(list(itertools.product(instruments,specifications)), numNodes*3)
 
+
     B = nx.DiGraph()
     B.add_nodes_from(metrics, bipartite=0)
     for cl in meas_settings:
         cost = randint(1, 100)
         B.add_node(cl, weight=cost, bipartite=1)
-    #B.add_nodes_from(meas_settings, bipartite=1)
     B.add_nodes_from(instruments, bipartite=2)
     B.add_nodes_from(specifications, bipartite=3)
     B.add_edges_from(e_mc)
