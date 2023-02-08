@@ -2,6 +2,10 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from random import randint
+import algorithms as algo
+
+def printGraph(G):
+	print(algo.makeClusterXY(G))
 
 def genPosNodes(G,prt=False):
 	if prt:
@@ -96,6 +100,14 @@ def getListOfMetricsByCluster(G):
 	
 	return m
 
+def getListOfMetricsByClusterList(G,clusterList):
+	aa = set()
+	for cl in clusterList:
+		m = [edge[0] for edge in G.in_edges(cl)]
+		for x in m:
+			aa.add(x)
+	
+	return list(aa)
 
 
 def getCostClList(G):
