@@ -1,4 +1,6 @@
 import networkx as nx
+import networkx as nx
+from operator import itemgetter
 
 
 def makeClusterXY(G):
@@ -56,4 +58,37 @@ def minCostMAXSetCover(G):
 
 	return listOfMetrics,list(metricsCovered),clusters,totalCost
 
+
+
+def minCostMAXSetCover_fast(G):
+	listOfMetrics = [x for x in G.nodes if 'M' in x and G.out_degree(x) > 0]
+	listOfCluster = [x for x in G.nodes if 'CL' in x]
+
+	metricsCovered = set()
+
+	clusters = []
+	totalCost = 0
+
+	while len(metricsCovered) != len(listOfMetrics):
+		clusterCost = nx.get_node_attributes(G, "weight")
+		clusterCost = {c: clusterCost[c] for c in listOfCluster}
+
+		clusterMetrics = {c: len([x for x, y in G.in_edges(c)]) for c in listOfCluster}
+
+		try:
+			bestCluster = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+			clusters.append(bestCluster)
+			totalCost += clusterCost[bestCluster]
+			metricsToCover = [x[1] for x in G.in_edges(bestCluster)]
+
+			G.remove_node(bestCluster)
+			listOfCluster.remove(bestCluster)
+			for m in metricsToCover:
+				if m in listOfMetrics:
+					G.remove_node(m)
+					metricsCovered.add(m)
+		except:
+			return listOfMetrics, list(metricsCovered), clusters, totalCost
+
+	return listOfMetrics, list(metricsCovered), clusters, totalCost
 
