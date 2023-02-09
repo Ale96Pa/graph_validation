@@ -155,9 +155,10 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
         # end = time.time()
         # writer.writerow(["h0",num_nodes,num_edges,end-start,res_set, res_w])
 
-        start = time.time()
+        start = time.perf_counter()
         res_set, res_w = wsc.heuristic_1(set_data,set_cost)
-        end = time.time()
+        end = time.perf_counter()
+        # print(end-start)
         
         covCluster	=	[]
         for x in res_set:
@@ -165,17 +166,19 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
         # tools.printGraph(MGM_G)
         m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
         writer.writerow(["h1",num_nodes,num_edges,end-start,covCluster, res_w])
+        print(end-start)
 
-
-        # start = time.time()
+        # start2 = time.perf_counter()
         # listOfMetrics,metricsCovered,clusters,totalCost = algo.minCostMAXSetCover(MGM_G)
-        # end = time.time()
+        # end2 = time.perf_counter()
         # writer.writerow(["mmg",num_nodes,num_edges,end-start,clusters, totalCost])
+        # print(end2-start2)
 
-        start = time.time()
-        listOfMetrics,metricsCovered,clusters,totalCost = algo.minCostMAXSetCover_fast(MGM_G)
-        end = time.time()
-        writer.writerow(["mmg_fast",num_nodes,num_edges,end-start,clusters, totalCost])
+        start3 = time.perf_counter()
+        listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_fast(MGM_G)
+        end3 = time.perf_counter()
+        writer.writerow(["mmg_fast",num_nodes,num_edges,end-start,clusters2, totalCost2])
+        print(end3-start3)
 
 def experiment_msc(G, MGM_G, metrics, set_data, filename):
 	num_nodes = len(G.nodes())
@@ -222,6 +225,6 @@ if __name__ == "__main__":
 		# Weighted set from the graph
 		set_cost = tools.getCostClList(MGM)
 		experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
-		print(n)
+		print(n, "------------------")
 
  

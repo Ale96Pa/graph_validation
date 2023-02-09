@@ -59,7 +59,7 @@ def minCostMAXSetCover(G):
 	return listOfMetrics,list(metricsCovered),clusters,totalCost
 
 
-
+import time
 def minCostMAXSetCover_fast(G):
 	listOfMetrics = [x for x in G.nodes if 'M' in x and G.out_degree(x) > 0]
 	listOfCluster = [x for x in G.nodes if 'CL' in x]
@@ -89,6 +89,6 @@ def minCostMAXSetCover_fast(G):
 					metricsCovered.add(m)
 		except:
 			return listOfMetrics, list(metricsCovered), clusters, totalCost
-
+	
 	return listOfMetrics, list(metricsCovered), clusters, totalCost
 
