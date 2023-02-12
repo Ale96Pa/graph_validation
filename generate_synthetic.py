@@ -7,7 +7,7 @@ import itertools
 import time
 import weighted_set_cover as wsc
 import min_set_cover as msc
-import sat
+#import sat
 
 import MGM_set_cover as mgm
 import generate_synthetic_thesisAlgo as tt
@@ -19,6 +19,7 @@ import algorithms as algo
 
 test = [0,5,10,25,50,100,150,250,500,1000,2000,3000, 4000]
 test = [0,5,10,25,50,100,150,250,500,1000,2000]
+#test = [5,10]
 solvers = ['g41','m22','maple','lgl']
 
 def prepend(list, str):
@@ -140,45 +141,45 @@ def experiment_sat(G, MGM_G, formulaG, filename):
 		writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
 		
 def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
-    num_nodes = len(MGM_G.nodes())
-    num_edges = len(MGM_G.edges())
-    cl = [node for node in MGM_G.nodes() if 'CL' in node]
+	num_nodes = len(MGM_G.nodes())
+	num_edges = len(MGM_G.edges())
+	cl = [node for node in MGM_G.nodes() if 'CL' in node]
 
-    with open(filename, 'a', newline='') as file:
-        writer = csv.writer(file)
+	with open(filename, 'a', newline='') as file:
+		writer = csv.writer(file)
 
-        # set_data_t = []
-        # for s in set_data:
-        #     set_data_t.append(set(s))
-        # start = time.time()
-        # res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t,set_cost)
-        # end = time.time()
-        # writer.writerow(["h0",num_nodes,num_edges,end-start,res_set, res_w])
+		# set_data_t = []
+		# for s in set_data:
+		#     set_data_t.append(set(s))
+		# start = time.time()
+		# res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t,set_cost)
+		# end = time.time()
+		# writer.writerow(["h0",num_nodes,num_edges,end-start,res_set, res_w])
 
-        start = time.perf_counter()
-        res_set, res_w = wsc.heuristic_1(set_data,set_cost)
-        end = time.perf_counter()
-        # print(end-start)
-        
-        covCluster	=	[]
-        for x in res_set:
-            covCluster.append(cl[x])
-        # tools.printGraph(MGM_G)
-        m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
-        writer.writerow(["h1",num_nodes,num_edges,end-start,covCluster, res_w])
-        print(end-start)
+		start = time.perf_counter()
+		res_set, res_w = wsc.heuristic_1(set_data,set_cost)
+		end = time.perf_counter()
+		# print(end-start)
+		
+		covCluster	=	[]
+		for x in res_set:
+			covCluster.append(cl[x])
+		# tools.printGraph(MGM_G)
+		m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
+		writer.writerow(["h1",num_nodes,num_edges,end-start,covCluster, res_w])
+		print(end-start)
+		
+		# start2 = time.perf_counter()
+		# listOfMetrics,metricsCovered,clusters,totalCost = algo.minCostMAXSetCover(MGM_G)
+		# end2 = time.perf_counter()
+		# writer.writerow(["mmg",num_nodes,num_edges,end-start,clusters, totalCost])
+		# print(end2-start2)
 
-        # start2 = time.perf_counter()
-        # listOfMetrics,metricsCovered,clusters,totalCost = algo.minCostMAXSetCover(MGM_G)
-        # end2 = time.perf_counter()
-        # writer.writerow(["mmg",num_nodes,num_edges,end-start,clusters, totalCost])
-        # print(end2-start2)
-
-        start3 = time.perf_counter()
-        listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_fast(MGM_G)
-        end3 = time.perf_counter()
-        writer.writerow(["mmg_fast",num_nodes,num_edges,end-start,clusters2, totalCost2])
-        print(end3-start3)
+		start3 = time.perf_counter()
+		listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_fast(MGM_G)
+		end3 = time.perf_counter()
+		writer.writerow(["mmg_fast",num_nodes,num_edges,end3-start3,clusters2, totalCost2])
+		print(end3-start3)
 
 def experiment_msc(G, MGM_G, metrics, set_data, filename):
 	num_nodes = len(G.nodes())

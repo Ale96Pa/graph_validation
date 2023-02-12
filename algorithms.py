@@ -73,22 +73,32 @@ def minCostMAXSetCover_fast(G):
 		clusterCost = nx.get_node_attributes(G, "weight")
 		clusterCost = {c: clusterCost[c] for c in listOfCluster}
 
-		clusterMetrics = {c: len([x for x, y in G.in_edges(c)]) for c in listOfCluster}
+		clusterMetrics = {c: len([x for x, y in G.in_edges(c) ]) for c in listOfCluster}
+		clusterToRemove = {x for x,y in clusterMetrics.items() if y==0}
+		
+		clusterMetrics = {x:y for x,y in clusterMetrics.items() if y!=0}
+		
+		for x in clusterToRemove:
+			clusterCost.pop(x,None)
 
 		try:
-			bestCluster = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+			#bestCluster = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+			bestCluster = max(clusterMetrics.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
 			clusters.append(bestCluster)
 			totalCost += clusterCost[bestCluster]
-			metricsToCover = [x[1] for x in G.in_edges(bestCluster)]
+			metricsToCover = [x[0] for x in G.in_edges(bestCluster)]
+			metricsCovered	=	metricsCovered.union(set(metricsToCover))
 
 			G.remove_node(bestCluster)
 			listOfCluster.remove(bestCluster)
 			for m in metricsToCover:
 				if m in listOfMetrics:
 					G.remove_node(m)
-					metricsCovered.add(m)
-		except:
-			return listOfMetrics, list(metricsCovered), clusters, totalCost
+					#metricsCovered.add(m)
+			
+		except Exception as e:
+			print(e)
+			#return listOfMetrics, list(metricsCovered), clusters, totalCost
 	
 	return listOfMetrics, list(metricsCovered), clusters, totalCost
 
