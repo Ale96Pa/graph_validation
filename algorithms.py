@@ -31,6 +31,21 @@ def searchMinCostMaxMetrics(clusterXY):
 	
 	return cluster,costCluster
 
+def searchMinCostMaxMetrics_fast(clusterCost,clusterMetrics):
+	#clusterMax = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+	clusterMax = max(clusterMetrics.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+	clusterMaxCost = clusterCost[clusterMax]
+	clusterMaxCover	=	clusterMetrics[clusterMax]
+	bestCluster = clusterMax
+	for x,y in clusterMetrics.items():
+		if y == clusterMaxCover and clusterCost[x] < clusterMaxCost:
+		#if clusterCost[x] == clusterMaxCost and y > clusterMaxCover:
+			clusterMaxCost = clusterCost[x]
+			#clusterMaxCover = y
+			bestCluster = x
+	
+	return bestCluster
+
 def minCostMAXSetCover(G):
 	listOfMetrics   =   [x for x in G.nodes if 'M' in x and G.out_degree(x) > 0]
 	listOfCluster   =   [x for x in G.nodes if 'CL' in x]
@@ -83,7 +98,8 @@ def minCostMAXSetCover_fast(G):
 
 		try:
 			#bestCluster = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
-			bestCluster = max(clusterMetrics.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+			#bestCluster = max(clusterMetrics.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+			bestCluster = searchMinCostMaxMetrics_fast(clusterCost,clusterMetrics)
 			clusters.append(bestCluster)
 			totalCost += clusterCost[bestCluster]
 			metricsToCover = [x[0] for x in G.in_edges(bestCluster)]
