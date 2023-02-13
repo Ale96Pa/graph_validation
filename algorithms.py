@@ -74,7 +74,20 @@ def minCostMAXSetCover(G):
 	return listOfMetrics,list(metricsCovered),clusters,totalCost
 
 
-import time
+def searchMinCostMaxMetrics(clusterXY):
+	metricCov = 0
+	costCluster = 999999
+	cluster	=	[]
+
+	for xyz in clusterXY:
+		if xyz[2] < costCluster and len(xyz[1]) > metricCov:
+			metricCov = len(xyz[1])
+			costCluster = xyz[2]
+			cluster = xyz[0]
+
+	
+	return cluster,costCluster
+
 def minCostMAXSetCover_fast(G):
 	listOfMetrics = [x for x in G.nodes if 'M' in x and G.out_degree(x) > 0]
 	listOfCluster = [x for x in G.nodes if 'CL' in x]
@@ -88,7 +101,8 @@ def minCostMAXSetCover_fast(G):
 		clusterCost = nx.get_node_attributes(G, "weight")
 		clusterCost = {c: clusterCost[c] for c in listOfCluster}
 
-		clusterMetrics = {c: len([x for x, y in G.in_edges(c) ]) for c in listOfCluster}
+		# clusterMetrics = {c: len([x for x, y in G.in_edges(c) ]) for c in listOfCluster}
+		clusterMetrics = {c: G.in_degree(c) for c in listOfCluster}
 		clusterToRemove = {x for x,y in clusterMetrics.items() if y==0}
 		
 		clusterMetrics = {x:y for x,y in clusterMetrics.items() if y!=0}
@@ -97,8 +111,6 @@ def minCostMAXSetCover_fast(G):
 			clusterCost.pop(x,None)
 
 		try:
-			#bestCluster = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
-			#bestCluster = max(clusterMetrics.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
 			bestCluster = searchMinCostMaxMetrics_fast(clusterCost,clusterMetrics)
 			clusters.append(bestCluster)
 			totalCost += clusterCost[bestCluster]
@@ -110,11 +122,8 @@ def minCostMAXSetCover_fast(G):
 			for m in metricsToCover:
 				if m in listOfMetrics:
 					G.remove_node(m)
-					#metricsCovered.add(m)
 			
 		except Exception as e:
 			print(e)
-			#return listOfMetrics, list(metricsCovered), clusters, totalCost
 	
 	return listOfMetrics, list(metricsCovered), clusters, totalCost
-

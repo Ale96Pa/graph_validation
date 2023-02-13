@@ -7,7 +7,7 @@ import itertools
 import time
 import weighted_set_cover as wsc
 import min_set_cover as msc
-#import sat
+import sat
 
 import MGM_set_cover as mgm
 import generate_synthetic_thesisAlgo as tt
@@ -18,8 +18,9 @@ import algorithms as algo
 
 
 test = [0,5,10,25,50,100,150,250,500,1000,2000,3000, 4000]
-test = [0,5,10,25,50,100,150,250,500,1000,2000]
+# test = [0,5,10,25,50,100,150,250,500,1000]
 #test = [5,10]
+test = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
 solvers = ['g41','m22','maple','lgl']
 
 def prepend(list, str):
@@ -64,10 +65,10 @@ def generate_graph(numNodes):
 
 	#--------------------------#
 
-	metrics = prepend(metrics,'M')
-	meas_settings = prepend(meas_settings,'CL')
-	instruments = prepend(instruments,'I')
-	specifications = prepend(specifications,'S')
+	metrics2 = prepend(metrics,'M')
+	meas_settings2 = prepend(meas_settings,'CL')
+	instruments2 = prepend(instruments,'I')
+	specifications2 = prepend(specifications,'S')
 
 	ee_mc = []
 	ee_ci = []
@@ -81,12 +82,12 @@ def generate_graph(numNodes):
 
 
 	MGM = nx.DiGraph()
-	MGM.add_nodes_from(metrics)
-	for cl in meas_settings:
+	MGM.add_nodes_from(metrics2)
+	for cl in meas_settings2:
 		cost = randint(1, 100)
 		MGM.add_node(cl, weight=cost)
-	MGM.add_nodes_from(instruments)
-	MGM.add_nodes_from(specifications)
+	MGM.add_nodes_from(instruments2)
+	MGM.add_nodes_from(specifications2)
 	MGM.add_edges_from(ee_mc)
 	MGM.add_edges_from(ee_ci)
 	MGM.add_edges_from(ee_is)
@@ -107,7 +108,7 @@ def generate_graph(numNodes):
 	# nx.draw(B, node_color=color_map, with_labels=True)
 	# plt.show()
 
-	return B, MGM, metrics, meas_settings, instruments, specifications
+	return B, MGM, metrics2, metrics, meas_settings, instruments, specifications
 
 
 def init_file(filename,head):
@@ -167,7 +168,7 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
 		# tools.printGraph(MGM_G)
 		m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
 		writer.writerow(["h1",num_nodes,num_edges,end-start,covCluster, res_w])
-		print(end-start)
+		# print(end-start)
 		
 		# start2 = time.perf_counter()
 		# listOfMetrics,metricsCovered,clusters,totalCost = algo.minCostMAXSetCover(MGM_G)
@@ -179,7 +180,13 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
 		listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_fast(MGM_G)
 		end3 = time.perf_counter()
 		writer.writerow(["mmg_fast",num_nodes,num_edges,end3-start3,clusters2, totalCost2])
-		print(end3-start3)
+		# print(end3-start3)
+
+		# start4 = time.perf_counter()
+		# listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_efficient(MGM_G)
+		# end4 = time.perf_counter()
+		# writer.writerow(["mmg_fast2.0",num_nodes,num_edges,end4-start4,clusters2, totalCost2])
+		# print(end4-start4)
 
 def experiment_msc(G, MGM_G, metrics, set_data, filename):
 	num_nodes = len(G.nodes())
@@ -212,16 +219,16 @@ if __name__ == "__main__":
 	for n in test:
 		# Graph
 		# G, m, c, i, s = generate_graph(n)
-		G, MGM, m, c, i, s = generate_graph(n)
+		G, MGM, m_label, m, c, i, s = generate_graph(n)
 
-		# CNF formula from the graph
-		#formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-		#experiment_sat(G, formulaG, filesat)
+		# ## CNF formula from the graph
+		# formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+		# experiment_sat(G, MGM, formulaG, filesat)
 
 		# Set from the graph
 		set_data = tools.getListOfMetricsByCluster(MGM)
-		m = [x for x in MGM.nodes if 'M' in x]
-		#experiment_msc(G, MGM, m, set_data, filemsc)
+		# m = [x for x in MGM.nodes if 'M' in x]
+		# experiment_msc(G, MGM, m, set_data, filemsc)
 
 		# Weighted set from the graph
 		set_cost = tools.getCostClList(MGM)

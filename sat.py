@@ -24,7 +24,8 @@ def convert_graph_to_cnf(G, M, C, I, S):
     for p in allP:
         if p not in paths:
             paths.append(p)
-            pneg = [-(int(''.join(c for c in x if c.isdigit()))) for x in p]
+            # pneg = [-(int(''.join(c for c in x if c.isdigit()))) for x in p]
+            pneg = [-x for x in p]
             graph.append(pneg)
 
     return graph.negate()
