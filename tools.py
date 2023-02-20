@@ -1,11 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from random import randint
-import algorithms as algo
 
-def printGraph(G):
-	print(algo.makeClusterXY(G))
+# def printGraph(G):
+# 	print(algo.makeClusterXY(G))
 
 def genPosNodes(G,prt=False):
 	if prt:

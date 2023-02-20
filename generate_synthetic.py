@@ -1,27 +1,25 @@
-import networkx as nx
-from networkx.algorithms import bipartite
-import matplotlib.pyplot as plt
-import random
-from random import randint
-import itertools
-import time
-import weighted_set_cover as wsc
-import min_set_cover as msc
-import sat
-
-import MGM_set_cover as mgm
-import generate_synthetic_thesisAlgo as tt
 import csv
 import tools
+import itertools
+import time
+import random
+from random import randint
+import networkx as nx
+import matplotlib.pyplot as plt
 
-import algorithms as algo
+import sat
+import min_set_cover as msc
+import weighted_set_cover as wsc
 
-
-test = [0,5,10,25,50,100,150,250,500,1000,2000,3000, 4000]
-# test = [0,5,10,25,50,100,150,250,500,1000]
-#test = [5,10]
+test = [0,5,10,25,50,100,150,250,500,1000,2000,3000]
+# test = [5,10]
 # test = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
 solvers = ['g41','m22','maple','lgl']
+
+def init_file(filename,head):
+	with open(filename, 'w', newline='') as file:
+		writer = csv.writer(file)
+		writer.writerow(head)
 
 def prepend(list, str):
 	str += '{0}'
@@ -37,22 +35,6 @@ def generate_graph(numNodes):
 	e_mc = random.sample(list(itertools.product(metrics,meas_settings)), numNodes*2)
 	e_ci = random.sample(list(itertools.product(meas_settings,instruments)), numNodes*2)
 	e_is = random.sample(list(itertools.product(instruments,specifications)), numNodes*2)
-	
-	
-
-
-
-	# e_mc = []
-	# e_ci = []
-	# e_is = []
-	# for i in range(1,numNodes*2):
-	#     m = random.sample(metrics, 1)[0]
-	#     c = random.sample(meas_settings, 1)[0]
-	#     i = random.sample(instruments, 1)[0]
-	#     s = random.sample(specifications, 1)[0]
-	#     e_mc.append((m,c))
-	#     e_ci.append((c,i))
-	#     e_is.append((i,s))
 
 	B = nx.DiGraph()
 	B.add_nodes_from(metrics)
@@ -92,29 +74,8 @@ def generate_graph(numNodes):
 	MGM.add_edges_from(ee_ci)
 	MGM.add_edges_from(ee_is)
 
-
-	#--------------------------#
-
-	# color_map = []
-	# for node in B:
-	#     if node <= numNodes*2:
-	#         color_map.append('blue')
-	#     elif node > numNodes*2 and node <= numNodes*4: 
-	#         color_map.append('green')
-	#     elif node > numNodes*4+1 and node <= numNodes*6:
-	#         color_map.append('red')
-	#     else:
-	#         color_map.append('yellow')
-	# nx.draw(B, node_color=color_map, with_labels=True)
-	# plt.show()
-
 	return B, MGM, metrics2, metrics, meas_settings, instruments, specifications
 
-
-def init_file(filename,head):
-	with open(filename, 'w', newline='') as file:
-		writer = csv.writer(file)
-		writer.writerow(head)
 
 def experiment_sat(G, MGM_G, formulaG, filename):
 	num_nodes = len(G.nodes())
@@ -137,56 +98,11 @@ def experiment_sat(G, MGM_G, formulaG, filename):
 			writer.writerow([s,num_nodes,num_edges,end-start,res])
 		
 		start = time.time()
-		r = mgm.correctnessMGM(MGM_G,None,None)
+		res_mgm = sat.metrics_deployability(MGM_G) #TODO: verificare correttezza
 		end = time.time()
-		writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
-		
-def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
-	num_nodes = len(MGM_G.nodes())
-	num_edges = len(MGM_G.edges())
-	cl = [node for node in MGM_G.nodes() if 'CL' in node]
-
-	with open(filename, 'a', newline='') as file:
-		writer = csv.writer(file)
-
-		set_data_t = []
-		for s in set_data:
-			set_data_t.append(set(s))
-		# start = time.time()
-		# res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t,set_cost)
-		# end = time.time()
-		# writer.writerow(["h0",num_nodes,num_edges,end-start,res_set, res_w])
-
-		start = time.perf_counter()
-		res_set, res_w = wsc.heuristic_1(set_data,set_cost)
-		end = time.perf_counter()
-		# print(end-start)
-		
-		covCluster	=	[]
-		for x in res_set:
-			covCluster.append(cl[x])
-		# tools.printGraph(MGM_G)
-		m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
-		writer.writerow(["h1",num_nodes,num_edges,end-start,covCluster, res_w])
-		# print(end-start)
-		
-		# start2 = time.perf_counter()
-		# listOfMetrics,metricsCovered,clusters,totalCost = algo.minCostMAXSetCover(MGM_G)
-		# end2 = time.perf_counter()
-		# writer.writerow(["mmg",num_nodes,num_edges,end-start,clusters, totalCost])
-		# print(end2-start2)
-
-		start3 = time.perf_counter()
-		listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_fast(MGM_G)
-		end3 = time.perf_counter()
-		writer.writerow(["mmg_fast",num_nodes,num_edges,end3-start3,clusters2, totalCost2])
-		# print(end3-start3)
-
-		# start4 = time.perf_counter()
-		# listOfMetrics2,metricsCovered2,clusters2,totalCost2 = algo.minCostMAXSetCover_efficient(MGM_G)
-		# end4 = time.perf_counter()
-		# writer.writerow(["mmg_fast2.0",num_nodes,num_edges,end4-start4,clusters2, totalCost2])
-		# print(end4-start4)
+		if res_mgm == result: res=1
+		else: res=0
+		writer.writerow(["MMG",num_nodes,num_edges,end-start,res])
 
 def experiment_msc(G, MGM_G, metrics, set_data, filename):
 	num_nodes = len(G.nodes())
@@ -196,16 +112,50 @@ def experiment_msc(G, MGM_G, metrics, set_data, filename):
 		writer = csv.writer(file)
 
 		start = time.time()
-		res_set = msc.min_set_cover(metrics, set_data)
+		res_msc = msc.min_set_cover(metrics, set_data)
 		end = time.time()
-		print(len(res_set), end-start)
-		writer.writerow(["msc",num_nodes,num_edges,end-start,res_set])
+		writer.writerow(["SoA heuristic",num_nodes,num_edges,end-start,len(res_msc)])
 
 		start = time.time()
-		res = tt.MGMminSetCover(MGM_G,None)
+		res = msc.exeMinSetCoverV2(MGM_G,None)
 		end = time.time()
-		print(len(res), end-start)
-		writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
+		writer.writerow(["MMG",num_nodes,num_edges,end-start,len(res[0])])
+
+
+def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
+	num_nodes = len(MGM_G.nodes())
+	num_edges = len(MGM_G.edges())
+	cl = [node for node in MGM_G.nodes() if 'CL' in node]
+
+	with open(filename, 'a', newline='') as file:
+		writer = csv.writer(file)
+
+		# set_data_t = []
+		# for i in range(0,len(set_data)):
+		# 	s = set_data[i]
+		# 	c = set_cost[i]
+		# 	set_data_t.append((set(s),c))
+
+		# start = time.perf_counter()
+		# res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t)
+		# end = time.perf_counter()
+		# writer.writerow(["h0",num_nodes,num_edges,end-start,res_set,res_w])
+
+		start = time.perf_counter()
+		res_set, res_w = wsc.heuristic_1(set_data,set_cost)
+		end = time.perf_counter()
+		
+		covCluster	=	[]
+		for x in res_set:
+			covCluster.append(cl[x])
+		m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
+		writer.writerow(["SoA heuristic",num_nodes,num_edges,end-start,len(covCluster),res_w])
+		
+
+		start = time.perf_counter()
+		clusters, totalCost = wsc.minCostMAXSetCover_fast(MGM_G)
+		end = time.perf_counter()
+		writer.writerow(["MMG",num_nodes,num_edges,end-start,len(clusters),totalCost])
 
 
 
@@ -219,13 +169,18 @@ if __name__ == "__main__":
 	init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
 	
 	for n in test:
-		# Graph
 		G, MGM, m_label, m, c, i, s = generate_graph(n)
+
+		# nx.draw(G, with_labels = True)
+		# plt.show()
+
+		# nx.draw(MGM, with_labels = True)
+		# plt.show()
 
 		# CNF formula from the graph
 		formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
 		experiment_sat(G, MGM, formulaG, filesat)
-
+		
 		# Set from the graph
 		set_data = tools.getListOfMetricsByCluster(MGM)
 		m = [x for x in MGM.nodes if 'M' in x]
@@ -233,7 +188,7 @@ if __name__ == "__main__":
 
 		# Weighted set from the graph
 		set_cost = tools.getCostClList(MGM)
-		experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+		experiment_wsc(MGM, m, set_data, set_cost, filewsc)
 		print(n, "------------------")
 
  

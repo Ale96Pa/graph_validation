@@ -8,7 +8,7 @@ https://doi.org/10.1007/978-0-387-30162-4_175
 
 import itertools
 from heapq import *
-from collections import defaultdict
+import networkx as nx
 
 class PriorityQueue:
     def __init__(self):
@@ -42,26 +42,15 @@ class PriorityQueue:
         return len(self._entry_map)
 
 def heuristic_0(universe, subsets):
-    # universe: a set of elements
-    # subsets: a list of sets containing elements of universe, each with an associated cost
-
-    # Create a dictionary to store the cost of each subset
     subset_costs = {frozenset(s): c for s, c in subsets}
-
-    # Create a dictionary to store the sets that cover each element of the universe
     element_cover = {}
     for elem in universe:
         element_cover[elem] = set(s for s in subsets if elem in s)
 
-    # Initialize an empty list to store the chosen subsets
     chosen_subsets = []
-
-    # Loop until all elements are covered
     while element_cover:
         # Find the subset with the smallest cost-to-cover ratio
         best_subset = min(subsets, key=lambda s: subset_costs[frozenset(s)] / len(element_cover & set(s)))
-
-        # Add the best subset to the chosen set
         chosen_subsets.append(best_subset)
 
         # Remove the chosen subset and update element_cover
@@ -69,8 +58,6 @@ def heuristic_0(universe, subsets):
             for subset in element_cover[elem]:
                 subset_costs[frozenset(subset)] -= subset_costs[frozenset(best_subset)]
             del element_cover[elem]
-
-    # Return the list of chosen subsets
     return chosen_subsets
 
 
@@ -110,28 +97,85 @@ def heuristic_1(S, w):
                     else:
                         pq.addtask(n, float(w[n]) / len(scopy[n]))
         scopy[a].clear()
-        pq.addtask(a, MAXPRIORITY)
-                        
+        pq.addtask(a, MAXPRIORITY)                       
     return selected, cost
 
-if __name__ == "__main__":
-    S = [[1, 2], [2, 3, 4], [3, 4, 5], [1, 5]]
-    w = [2, 1, 3, 2]
-    selected, cost = heuristic_1(S, w)
-    print("selected:", selected)
-    print("cost:", cost)
 
-    universe = set([1, 2, 3, 4, 5])
-    # sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
-    f = []
-    for s in S:       
-        f1 = set()
-        f1.update(s)
-        f.append(f1)
-    print(f)
+def searchMinCostMaxMetrics_fast(clusterCost,clusterMetrics):
+	#clusterMax = min(clusterCost.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+	clusterMax = max(clusterMetrics.items(), key=lambda x: (x[1], -clusterMetrics[x[0]]))[0]
+	clusterMaxCost = clusterCost[clusterMax]
+	clusterMaxCover	=	clusterMetrics[clusterMax]
+	bestCluster = clusterMax
+	for x,y in clusterMetrics.items():
+		if y == clusterMaxCover and clusterCost[x] < clusterMaxCost:
+		#if clusterCost[x] == clusterMaxCost and y > clusterMaxCover:
+			clusterMaxCost = clusterCost[x]
+			#clusterMaxCover = y
+			bestCluster = x
+	
+	return bestCluster
 
-    universe = set([1, 2, 3, 4, 5])
-    subsets = [({1, 2, 3}, 5), ({2, 4}, 10), ({3, 4}, 7), ({4, 5}, 8)]
-    selected_sets, total_weight = heuristic_0(universe, subsets)
-    print("Selected sets:", selected_sets)
-    print("Total weight:", total_weight)
+def minCostMAXSetCover_fast(G):
+	listOfMetrics = [x for x in G.nodes if 'M' in x and G.out_degree(x) > 0]
+	listOfCluster = [x for x in G.nodes if 'CL' in x]
+
+	metricsCovered = set()
+
+	clusters = []
+	totalCost = 0
+
+	while len(metricsCovered) != len(listOfMetrics):
+		clusterCost = nx.get_node_attributes(G, "weight")
+		clusterCost = {c: clusterCost[c] for c in listOfCluster}
+
+		# clusterMetrics = {c: len([x for x, y in G.in_edges(c) ]) for c in listOfCluster}
+		clusterMetrics = {c: G.in_degree(c) for c in listOfCluster}
+		clusterToRemove = {x for x,y in clusterMetrics.items() if y==0}
+		
+		clusterMetrics = {x:y for x,y in clusterMetrics.items() if y!=0}
+		
+		for x in clusterToRemove:
+			clusterCost.pop(x,None)
+
+		try:
+			bestCluster = searchMinCostMaxMetrics_fast(clusterCost,clusterMetrics)
+			clusters.append(bestCluster)
+			totalCost += clusterCost[bestCluster]
+			metricsToCover = [x[0] for x in G.in_edges(bestCluster)]
+			metricsCovered	=	metricsCovered.union(set(metricsToCover))
+
+			G.remove_node(bestCluster)
+			listOfCluster.remove(bestCluster)
+			for m in metricsToCover:
+				if m in listOfMetrics:
+					G.remove_node(m)
+			
+		except Exception as e:
+			print(e)
+	
+	return clusters, totalCost
+
+
+
+# if __name__ == "__main__":
+#     S = [[1, 2], [2, 3, 4], [3, 4, 5], [1, 5]]
+#     w = [2, 1, 3, 2]
+#     selected, cost = heuristic_1(S, w)
+#     print("selected:", selected)
+#     print("cost:", cost)
+
+#     universe = set([1, 2, 3, 4, 5])
+#     # sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
+#     f = []
+#     for s in S:       
+#         f1 = set()
+#         f1.update(s)
+#         f.append(f1)
+#     print(f)
+
+#     universe = set([1, 2, 3, 4, 5])
+#     subsets = [({1, 2, 3}, 5), ({2, 4}, 10), ({3, 4}, 7), ({4, 5}, 8)]
+#     selected_sets, total_weight = heuristic_0(universe, subsets)
+#     print("Selected sets:", selected_sets)
+#     print("Total weight:", total_weight)

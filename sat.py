@@ -1,11 +1,6 @@
-# the standard way to import PySAT:
 from pysat.formula import CNF
 from pysat.solvers import Solver
 import networkx as nx
-from networkx.algorithms import bipartite
-import matplotlib.pyplot as plt
-import generate_synthetic as gs
-import re
 
 def convert_graph_to_cnf(G, M, C, I, S):
     paths = []
@@ -24,7 +19,6 @@ def convert_graph_to_cnf(G, M, C, I, S):
     for p in allP:
         if p not in paths:
             paths.append(p)
-            # pneg = [-(int(''.join(c for c in x if c.isdigit()))) for x in p]
             pneg = [-x for x in p]
             graph.append(pneg)
 
@@ -32,17 +26,34 @@ def convert_graph_to_cnf(G, M, C, I, S):
 
 def solve_sat(cnf, solv_type):
     with Solver(name=solv_type, bootstrap_with=cnf) as solver:
-        # # call the solver for this formula:
-        # print('formula is', f'{"s" if solver.solve() else "uns"}atisfiable')
+        return not solver.solve()
+    
 
-        # # # the formula is satisfiable and so has a model
-        # # print('and the model is:', solver.get_model())
+# TODO: controllare correttezza
+def metrics_deployability(MGM):
+    wrongCL = set()
+    wrongIN = set()
+    vIN = [node for node in MGM.nodes() if 'I' in node]
+    vM	= [node for node in MGM.nodes() if 'M' in node]
+    vCL = [node for node in MGM.nodes() if 'CL' in node]
 
-        # if not solver.solve():
-        #     print('and the unsatisfiable core is:', solver.get_core())
-        return solver.solve()
+    for inp in vIN:
+        if MGM.out_degree(inp) == 0:
+            wrongIN = wrongIN.union({inp})
+            wrongCL = wrongCL.union(set([edge[0] for edge in MGM.in_edges(inp) ]))
 
-if __name__ == "__main__":
-    G, m, c, i, s = gs.generate_graph(3)
-    graph_formula = convert_graph_to_cnf(G, m, c, i, s)
-    solve_sat(graph_formula, "m22")
+    for wrong in wrongIN:
+        MGM.remove_node(wrong)
+    for wrong in wrongCL:
+        MGM.remove_node(wrong)
+
+    for mt in vM:
+        if MGM.out_degree(mt) == 0:
+            MGM.remove_node(mt)
+            # TODO: almeno una metrica non è implementabile
+            return 0
+    
+    for cl in vCL:
+        if MGM.in_degree(cl) == 0:
+            MGM.remove_node(cl)
+    return 1
