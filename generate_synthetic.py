@@ -20,7 +20,7 @@ import algorithms as algo
 test = [0,5,10,25,50,100,150,250,500,1000,2000,3000, 4000]
 # test = [0,5,10,25,50,100,150,250,500,1000]
 #test = [5,10]
-test = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
+# test = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
 solvers = ['g41','m22','maple','lgl']
 
 def prepend(list, str):
@@ -149,9 +149,9 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
 	with open(filename, 'a', newline='') as file:
 		writer = csv.writer(file)
 
-		# set_data_t = []
-		# for s in set_data:
-		#     set_data_t.append(set(s))
+		set_data_t = []
+		for s in set_data:
+			set_data_t.append(set(s))
 		# start = time.time()
 		# res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t,set_cost)
 		# end = time.time()
@@ -198,12 +198,14 @@ def experiment_msc(G, MGM_G, metrics, set_data, filename):
 		start = time.time()
 		res_set = msc.min_set_cover(metrics, set_data)
 		end = time.time()
-		writer.writerow(["msc",num_nodes,num_edges,end-start,"todo1"])
+		print(len(res_set), end-start)
+		writer.writerow(["msc",num_nodes,num_edges,end-start,res_set])
 
 		start = time.time()
 		res = tt.MGMminSetCover(MGM_G,None)
 		end = time.time()
-		writer.writerow(["mmg",num_nodes,num_edges,end-start,"todo2"])
+		print(len(res), end-start)
+		writer.writerow(["mmg",num_nodes,num_edges,end-start,res])
 
 
 
@@ -218,17 +220,16 @@ if __name__ == "__main__":
 	
 	for n in test:
 		# Graph
-		# G, m, c, i, s = generate_graph(n)
 		G, MGM, m_label, m, c, i, s = generate_graph(n)
 
-		# ## CNF formula from the graph
-		# formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-		# experiment_sat(G, MGM, formulaG, filesat)
+		# CNF formula from the graph
+		formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+		experiment_sat(G, MGM, formulaG, filesat)
 
 		# Set from the graph
 		set_data = tools.getListOfMetricsByCluster(MGM)
-		# m = [x for x in MGM.nodes if 'M' in x]
-		# experiment_msc(G, MGM, m, set_data, filemsc)
+		m = [x for x in MGM.nodes if 'M' in x]
+		experiment_msc(G, MGM, m, set_data, filemsc)
 
 		# Weighted set from the graph
 		set_cost = tools.getCostClList(MGM)

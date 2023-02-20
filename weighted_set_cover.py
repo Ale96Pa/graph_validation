@@ -41,24 +41,37 @@ class PriorityQueue:
     def __len__(self):
         return len(self._entry_map)
 
-# Weighted set cover with no heuristic and optimal solution
-def heuristic_0(universe, sets, weights):
-    # lista per mantenere traccia dei set selezionati
-    selected_sets = []
-    # lista per mantenere traccia degli elementi del universo coperti
-    covered_elements = []
-    # ordina i set in base al loro peso
-    sorted_sets = sorted(zip(sets, weights), key=lambda x: x[1])
-    while len(covered_elements) < len(universe):
-        # seleziona il set con peso minimo che copre elementi non ancora coperti
-        for set_, weight in sorted_sets:
-            if set_.issubset(universe) and not set_.intersection(covered_elements):
-                selected_sets.append(set_)
-                covered_elements.extend(set_)
-                break
-    # calcola il peso totale dei set selezionati
-    total_weight = sum([weights[sets.index(set_)] for set_ in selected_sets])
-    return selected_sets, total_weight
+def heuristic_0(universe, subsets):
+    # universe: a set of elements
+    # subsets: a list of sets containing elements of universe, each with an associated cost
+
+    # Create a dictionary to store the cost of each subset
+    subset_costs = {frozenset(s): c for s, c in subsets}
+
+    # Create a dictionary to store the sets that cover each element of the universe
+    element_cover = {}
+    for elem in universe:
+        element_cover[elem] = set(s for s in subsets if elem in s)
+
+    # Initialize an empty list to store the chosen subsets
+    chosen_subsets = []
+
+    # Loop until all elements are covered
+    while element_cover:
+        # Find the subset with the smallest cost-to-cover ratio
+        best_subset = min(subsets, key=lambda s: subset_costs[frozenset(s)] / len(element_cover & set(s)))
+
+        # Add the best subset to the chosen set
+        chosen_subsets.append(best_subset)
+
+        # Remove the chosen subset and update element_cover
+        for elem in best_subset:
+            for subset in element_cover[elem]:
+                subset_costs[frozenset(subset)] -= subset_costs[frozenset(best_subset)]
+            del element_cover[elem]
+
+    # Return the list of chosen subsets
+    return chosen_subsets
 
 
 # Heuristic for weighted-set-cover as in [1]
@@ -117,7 +130,8 @@ if __name__ == "__main__":
         f.append(f1)
     print(f)
 
-    weights = [2, 1, 3, 2]
-    selected_sets, total_weight = heuristic_0(universe, f, weights)
+    universe = set([1, 2, 3, 4, 5])
+    subsets = [({1, 2, 3}, 5), ({2, 4}, 10), ({3, 4}, 7), ({4, 5}, 8)]
+    selected_sets, total_weight = heuristic_0(universe, subsets)
     print("Selected sets:", selected_sets)
     print("Total weight:", total_weight)

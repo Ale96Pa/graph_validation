@@ -19,7 +19,7 @@ def min_set_cover(universe, subsets):
             st+=str(e)+" "
         st+=")"
         res.append(st)
-    return res#covering
+    return covering
 
 if __name__ == "__main__":
     universe = [1, 2, 3, 4, 5]
