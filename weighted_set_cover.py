@@ -41,25 +41,6 @@ class PriorityQueue:
     def __len__(self):
         return len(self._entry_map)
 
-def heuristic_0(universe, subsets):
-    subset_costs = {frozenset(s): c for s, c in subsets}
-    element_cover = {}
-    for elem in universe:
-        element_cover[elem] = set(s for s in subsets if elem in s)
-
-    chosen_subsets = []
-    while element_cover:
-        # Find the subset with the smallest cost-to-cover ratio
-        best_subset = min(subsets, key=lambda s: subset_costs[frozenset(s)] / len(element_cover & set(s)))
-        chosen_subsets.append(best_subset)
-
-        # Remove the chosen subset and update element_cover
-        for elem in best_subset:
-            for subset in element_cover[elem]:
-                subset_costs[frozenset(subset)] -= subset_costs[frozenset(best_subset)]
-            del element_cover[elem]
-    return chosen_subsets
-
 
 # Heuristic for weighted-set-cover as in [1]
 MAXPRIORITY = 999999
@@ -98,6 +79,45 @@ def heuristic_1(S, w):
                         pq.addtask(n, float(w[n]) / len(scopy[n]))
         scopy[a].clear()
         pq.addtask(a, MAXPRIORITY)                       
+    return selected, cost
+
+def heuristic1_bis(S, w):
+    udict = {}
+    selected = list()
+    scopy = [] # During the process, S will be modified. Make a copy for S.
+    for index, item in enumerate(S):
+        scopy.append(set(item))
+        for j in item:
+            if j not in udict:
+                udict[j] = set()
+            udict[j].add(index)
+
+    cost = 0
+    covered = set()
+    while len(covered) < len(udict):
+        best_set = None
+        best_set_weight = -1
+        best_set_coverage = set()
+        for index, item in enumerate(scopy):
+            if len(item) == 0:
+                continue
+            coverage = udict.keys() & item
+            coverage_weight = float(w[index]) / len(coverage)
+            if coverage_weight > best_set_weight:
+                best_set = index
+                best_set_weight = coverage_weight
+                best_set_coverage = coverage
+
+        selected.append(best_set) # add the most cost-effective set to the solution
+        cost += w[best_set]
+        covered |= best_set_coverage # update the covered elements
+        # Update the sets that contain the new covered elements
+        for m in best_set_coverage:
+            for n in udict[m]:
+                if n != best_set:
+                    scopy[n].discard(m)
+        scopy[best_set].clear()
+
     return selected, cost
 
 
@@ -158,24 +178,27 @@ def minCostMAXSetCover_fast(G):
 
 
 
-# if __name__ == "__main__":
-#     S = [[1, 2], [2, 3, 4], [3, 4, 5], [1, 5]]
-#     w = [2, 1, 3, 2]
-#     selected, cost = heuristic_1(S, w)
-#     print("selected:", selected)
-#     print("cost:", cost)
+if __name__ == "__main__":
+    U = [1,2,3,4,5]
+    S = [[1, 2], [2, 3, 4], [3, 4, 5], [1, 5]]
+    w = [2, 1, 3, 2]
+    selected, cost = heuristic_1(S, w)
+    sel, co = heuristic1_bis(S,w)
+    print("selected:", selected, sel)
+    print("cost:", cost, co)
 
-#     universe = set([1, 2, 3, 4, 5])
-#     # sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
-#     f = []
-#     for s in S:       
-#         f1 = set()
-#         f1.update(s)
-#         f.append(f1)
-#     print(f)
+    # universe = set([1, 2, 3, 4, 5])
+    # # sets = [{1, 2}, {2, 3, 4}, {3, 4, 5}, {1, 5}]
+    # f = []
+    # for s in S:       
+    #     f1 = set()
+    #     f1.update(s)
+    #     f.append(f1)
+    # print(f)
 
-#     universe = set([1, 2, 3, 4, 5])
-#     subsets = [({1, 2, 3}, 5), ({2, 4}, 10), ({3, 4}, 7), ({4, 5}, 8)]
-#     selected_sets, total_weight = heuristic_0(universe, subsets)
-#     print("Selected sets:", selected_sets)
-#     print("Total weight:", total_weight)
+    # universe = set([1, 2, 3, 4, 5])
+    # subsets = [({1, 2, 3}, 5), ({2, 4}, 10), ({3, 4}, 7), ({4, 5}, 8)]
+    # selected_sets, total_weight = heuristic_0(universe, subsets)
+    # print("Selected sets:", selected_sets)
+    # print("Total weight:", total_weight)
+
