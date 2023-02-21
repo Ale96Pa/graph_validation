@@ -114,12 +114,10 @@ def experiment_msc(G, MGM_G, metrics, set_data, filename):
 		start = time.time()
 		res_msc = msc.min_set_cover(metrics, set_data)
 		end = time.time()
-		writer.writerow(["SoA heuristic",num_nodes,num_edges,end-start,len(res_msc)])
+		writer.writerow(["Optimal result",num_nodes,num_edges,end-start,len(res_msc)])
 
-		start = time.time()
-		res = msc.exeMinSetCoverV2(MGM_G,None)
-		end = time.time()
-		writer.writerow(["MMG",num_nodes,num_edges,end-start,len(res[0])])
+		time_perf, res =  msc.exeMinSetCoverV2(MGM_G,None)
+		writer.writerow(["MMG",num_nodes,num_edges,time_perf,len(res)])
 
 
 def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
@@ -130,16 +128,18 @@ def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
 	with open(filename, 'a', newline='') as file:
 		writer = csv.writer(file)
 
-		# set_data_t = []
+		# dic_set = {}
+		# dic_cost = {}
 		# for i in range(0,len(set_data)):
-		# 	s = set_data[i]
-		# 	c = set_cost[i]
-		# 	set_data_t.append((set(s),c))
+		# 	dic_set["S"+str(i+1)] = set_data[i]
+		# 	dic_cost["S"+str(i+1)] = set_cost[i]
 
 		# start = time.perf_counter()
-		# res_set, res_w = wsc.heuristic_0(set(metrics),set_data_t)
+		# res_opt = wsc.heuristic_0(metrics,dic_set,dic_cost)
+		# res_w = 0
 		# end = time.perf_counter()
-		# writer.writerow(["h0",num_nodes,num_edges,end-start,res_set,res_w])
+		# writer.writerow(["Optimal result",num_nodes,num_edges,end-start,res_opt,res_w])
+		# print(res_opt)
 
 		start = time.perf_counter()
 		res_set, res_w = wsc.heuristic_1(set_data,set_cost)

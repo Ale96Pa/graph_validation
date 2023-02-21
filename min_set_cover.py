@@ -1,3 +1,6 @@
+import time
+from itertools import chain, combinations
+
 def min_set_cover(universe, subsets):
     universe = set(universe)
     subsets = [set(s) for s in subsets]
@@ -20,9 +23,6 @@ def min_set_cover(universe, subsets):
     covering = [ele for ele in covering if ele != set()]
     return covering
 
-
-import heapq
-
 def makeSForAlgo(listOfNodes, Graph):
     S = []
     for node in listOfNodes:
@@ -36,8 +36,7 @@ def makeXForAlgo(listOfNodes, Graph):
     X = [node for node in listOfNodes if Graph.out_degree(node) > 0]
     return set(X)
 
-def greedyMinSetCover(X, S):
-    U = set(X)
+def greedyMinSetCover(U, S):
     C = []
     while U:
         i = max(range(len(S)), key=lambda j: len(S[j] & U))
@@ -53,8 +52,10 @@ def exeMinSetCoverV2(MGM, results={}):
     subMGM = MGM.subgraph(listOfCovMetrics + listOfClusters)
 
     S = makeSForAlgo(listOfClusters, subMGM)
-    X = makeXForAlgo(listOfCovMetrics, subMGM)
+    X = set(makeXForAlgo(listOfCovMetrics, subMGM))
+    start = time.perf_counter()
     I = greedyMinSetCover(X, S)
+    end = time.perf_counter()
 
     listOfCovCluster = [listOfClusters[i] for i in I]
 
@@ -66,7 +67,7 @@ def exeMinSetCoverV2(MGM, results={}):
 
     covGraph = MGM.subgraph(listOfCovMetrics + listOfCovCluster)
 
-    return listOfCovCluster, covGraph, results
+    return end-start, listOfCovCluster#, covGraph, results
 
 
 if __name__ == "__main__":
