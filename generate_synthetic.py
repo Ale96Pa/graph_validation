@@ -5,15 +5,15 @@ import time
 import random
 from random import randint
 import networkx as nx
-import matplotlib.pyplot as plt
+import analysis
 
 import sat
 import min_set_cover as msc
 import weighted_set_cover as wsc
 
 test = [0,5,10,25,50,100,150,250,500,1000,2000,3000]
-# test = [5,10]
-# test = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
+testmsc = range(2,30)
+testwsc = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
 solvers = ['g41','m22','maple','lgl']
 
 def init_file(filename,head):
@@ -111,13 +111,21 @@ def experiment_msc(G, MGM_G, metrics, set_data, filename):
 	with open(filename, 'a', newline='') as file:
 		writer = csv.writer(file)
 
-		start = time.time()
-		res_msc = msc.min_set_cover(metrics, set_data)
-		end = time.time()
-		writer.writerow(["Optimal result",num_nodes,num_edges,end-start,len(res_msc)])
+		a=[]
+		for elem in set_data:
+			a.append(set(elem))
 
-		time_perf, res =  msc.exeMinSetCoverV2(MGM_G,None)
-		writer.writerow(["MMG",num_nodes,num_edges,time_perf,len(res)])
+		start = time.time()
+		res_msc = msc.setCover(a)
+		end = time.time()
+		res_msc = set([item for sublist in res_msc for item in sublist])
+		writer.writerow(["Set Cover",num_nodes,num_edges,end-start,len(res_msc)])
+
+		start = time.time()
+		res_msc_opt = msc.greedyMinSetCover(frozenset(metrics), a)
+		end = time.time()
+		res_msc_opt = set([item for sublist in res_msc_opt for item in sublist])
+		writer.writerow(["Greedy Approach",num_nodes,num_edges,end-start,len(res_msc_opt)])
 
 
 def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
@@ -128,19 +136,6 @@ def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
 	with open(filename, 'a', newline='') as file:
 		writer = csv.writer(file)
 
-		# dic_set = {}
-		# dic_cost = {}
-		# for i in range(0,len(set_data)):
-		# 	dic_set["S"+str(i+1)] = set_data[i]
-		# 	dic_cost["S"+str(i+1)] = set_cost[i]
-
-		# start = time.perf_counter()
-		# res_opt = wsc.heuristic_0(metrics,dic_set,dic_cost)
-		# res_w = 0
-		# end = time.perf_counter()
-		# writer.writerow(["Optimal result",num_nodes,num_edges,end-start,res_opt,res_w])
-		# print(res_opt)
-
 		start = time.perf_counter()
 		res_set, res_w = wsc.heuristic_1(set_data,set_cost)
 		end = time.perf_counter()
@@ -150,7 +145,6 @@ def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
 			covCluster.append(cl[x])
 		m = tools.getListOfMetricsByClusterList(MGM_G,covCluster)
 		writer.writerow(["SoA heuristic",num_nodes,num_edges,end-start,len(covCluster),res_w])
-		
 
 		start = time.perf_counter()
 		clusters, totalCost = wsc.minCostMAXSetCover_fast(MGM_G)
@@ -171,24 +165,44 @@ if __name__ == "__main__":
 	for n in test:
 		G, MGM, m_label, m, c, i, s = generate_graph(n)
 
-		# nx.draw(G, with_labels = True)
-		# plt.show()
-
-		# nx.draw(MGM, with_labels = True)
-		# plt.show()
-
 		# CNF formula from the graph
 		formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
 		experiment_sat(G, MGM, formulaG, filesat)
 		
 		# Set from the graph
 		set_data = tools.getListOfMetricsByCluster(MGM)
-		m = [x for x in MGM.nodes if 'M' in x]
-		experiment_msc(G, MGM, m, set_data, filemsc)
+		# m = [x for x in MGM.nodes if 'M' in x]
+		# experiment_msc(G, MGM, m, set_data, filemsc)
 
 		# Weighted set from the graph
 		set_cost = tools.getCostClList(MGM)
 		experiment_wsc(MGM, m, set_data, set_cost, filewsc)
-		print(n, "------------------")
 
- 
+		print("----",n,"----")
+	print("END EXPERIMENT 1")
+
+	for n in testmsc:
+		G, MGM, m_label, m, c, i, s = generate_graph(n)
+		# Set from the graph
+		set_data = tools.getListOfMetricsByCluster(MGM)
+		m = [x for x in MGM.nodes if 'M' in x]
+		experiment_msc(G, MGM, m, set_data, filemsc)
+		print("----",n,"----")
+	print("END EXPERIMENT 2")
+
+
+	analysis.performance_sat(filesat)
+	analysis.validation_sat(filesat)
+	analysis.performance_msc(filemsc)
+	analysis.validation_msc(filemsc)
+	analysis.performance_wsc(filewsc)
+	
+	init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
+	for n in testwsc:
+		G, MGM, m_label, m, c, i, s = generate_graph(n)
+		set_data = tools.getListOfMetricsByCluster(MGM)
+		set_cost = tools.getCostClList(MGM)
+		experiment_wsc(MGM, m, set_data, set_cost, filewsc)
+		print("----",n,"----")
+	print("END EXPERIMENT 3")
+	analysis.validation_wsc(filewsc)

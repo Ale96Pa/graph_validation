@@ -28,8 +28,6 @@ def solve_sat(cnf, solv_type):
     with Solver(name=solv_type, bootstrap_with=cnf) as solver:
         return not solver.solve()
     
-
-# TODO: controllare correttezza
 def metrics_deployability(MGM):
     wrongCL = set()
     wrongIN = set()
@@ -50,7 +48,6 @@ def metrics_deployability(MGM):
     for mt in vM:
         if MGM.out_degree(mt) == 0:
             MGM.remove_node(mt)
-            # TODO: almeno una metrica non è implementabile
             return 0
     
     for cl in vCL:
