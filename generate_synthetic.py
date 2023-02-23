@@ -14,7 +14,7 @@ import weighted_set_cover as wsc
 test = [0,5,10,25,50,100,150,250,500,1000,2000,3000]
 testmsc = range(2,30)
 testwsc = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
-solvers = ['g41','m22','maple','lgl']
+solvers = ['g41','lgl','m22','maple']
 
 def init_file(filename,head):
 	with open(filename, 'w', newline='') as file:
