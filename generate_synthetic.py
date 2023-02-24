@@ -98,7 +98,7 @@ def experiment_sat(G, MGM_G, formulaG, filename):
 			writer.writerow([s,num_nodes,num_edges,end-start,res])
 		
 		start = time.time()
-		res_mgm = sat.metrics_deployability(MGM_G) #TODO: verificare correttezza
+		res_mgm = sat.metrics_deployability(MGM_G)
 		end = time.time()
 		if res_mgm == result: res=1
 		else: res=0
