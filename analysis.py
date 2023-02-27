@@ -9,8 +9,14 @@ def performance_sat(filesat):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        x = sat_df["nodes"].to_list()
-        y = sat_df["time"]
+        # x = sat_df["nodes"].to_list()
+        # y = sat_df["time"]
+        sat_df_mean = sat_df.groupby(['nodes'])
+        x =[5,10,25,50,100,150,250,500,1000,2000]
+        y = []
+        for subgroup, subitme in sat_df_mean:
+            subsat_df = sat_df_mean.get_group(subgroup)
+            y.append(subsat_df["time"].mean())
         plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
         i+=1
     
@@ -29,8 +35,14 @@ def validation_sat(filesat):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        x = sat_df["nodes"].to_list()
-        y = sat_df["results"]
+        # x = sat_df["nodes"].to_list()
+        # y = sat_df["results"]
+        sat_df_mean = sat_df.groupby(['nodes'])
+        x =[5,10,25,50,100,150,250,500,1000,2000]
+        y = []
+        for subgroup, subitme in sat_df_mean:
+            subsat_df = sat_df_mean.get_group(subgroup)
+            y.append(subsat_df["results"].mean())
         plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
         i+=1
     
@@ -49,8 +61,14 @@ def performance_msc(filemsc):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        x = sat_df["nodes"].to_list()
-        y = sat_df["time"]
+        sat_df_mean = sat_df.groupby(['nodes'])
+        # x = sat_df["nodes"].to_list()
+        # y = sat_df["time"]
+        x =range(2,30)
+        y = []
+        for subgroup, subitme in sat_df_mean:
+            subsat_df = sat_df_mean.get_group(subgroup)
+            y.append(subsat_df["time"].mean())
         plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
         i+=1
     
@@ -69,8 +87,14 @@ def validation_msc(filemsc):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        x = sat_df["nodes"].to_list()
-        y = sat_df["results"]
+        # x = sat_df["nodes"].to_list()
+        # y = sat_df["results"]
+        sat_df_mean = sat_df.groupby(['nodes'])
+        x =range(2,30)
+        y = []
+        for subgroup, subitme in sat_df_mean:
+            subsat_df = sat_df_mean.get_group(subgroup)
+            y.append(subsat_df["results"].mean())
         plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
         i+=1
     
@@ -89,8 +113,14 @@ def performance_wsc(filewsc):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        x = sat_df["nodes"].to_list()
-        y = sat_df["time"]
+        # x = sat_df["nodes"].to_list()
+        # y = sat_df["time"]
+        sat_df_mean = sat_df.groupby(['nodes'])
+        x =[5,10,25,50,100,150,250,500,1000,2000]
+        y = []
+        for subgroup, subitme in sat_df_mean:
+            subsat_df = sat_df_mean.get_group(subgroup)
+            y.append(subsat_df["time"].mean())
         plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
         i+=1
     
@@ -103,14 +133,20 @@ def performance_wsc(filewsc):
     plt.close()
 
 def validation_wsc(filewsc):
-    df = pd.read_csv(filewsc).tail(8)
+    df = pd.read_csv(filewsc)
     marks = ["x","o","v","s","+","x"]
     df_grouped = df.groupby(['name'])
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        x = sat_df["nodes"].to_list()
-        y = sat_df["result_w"]
+        # x = sat_df["nodes"].to_list()
+        # y = sat_df["result_w"]
+        sat_df_mean = sat_df.groupby(['nodes'])
+        x =[2000,2005,2010,2020,2030,2050,2060,2100,2150]
+        y = []
+        for subgroup, subitme in sat_df_mean:
+            subsat_df = sat_df_mean.get_group(subgroup)
+            y.append(subsat_df["result_w"].mean())
         plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
         i+=1
     
@@ -123,9 +159,10 @@ def validation_wsc(filewsc):
     plt.close()
 
 if __name__ == "__main__":
-    filesat = 'sat.csv'
-    filemsc = "msc.csv"
-    filewsc = "wsc.csv"
+    filesat = 'result/sat.csv'
+    filemsc = "result/msc.csv"
+    filewsc = "result/wsc.csv"
+    filewsc2 = "result/wsc2.csv"
     performance_sat(filesat)
     validation_sat(filesat)
 
@@ -133,4 +170,4 @@ if __name__ == "__main__":
     validation_msc(filemsc)
 
     performance_wsc(filewsc)
-    validation_wsc(filewsc)
+    validation_wsc(filewsc2)

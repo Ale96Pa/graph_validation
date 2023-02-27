@@ -11,9 +11,9 @@ import sat
 import min_set_cover as msc
 import weighted_set_cover as wsc
 
-test = [0,5,10,25,50,100,150,250,500,1000,2000,3000]
+test = [5,10,25,50,100,150,250,500,1000,2000]
 testmsc = range(2,30)
-testwsc = [2000,2005,2010,2020,2030,2050,2060,2100,2150,2200]
+testwsc = [2000,2005,2010,2020,2030,2050,2060,2100,2150]
 solvers = ['g41','lgl','m22','maple']
 
 def init_file(filename,head):
@@ -128,9 +128,9 @@ def experiment_msc(G, MGM_G, metrics, set_data, filename):
 		writer.writerow(["Greedy Approach",num_nodes,num_edges,end-start,len(res_msc_opt)])
 
 
-def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
-	num_nodes = len(MGM_G.nodes())
-	num_edges = len(MGM_G.edges())
+def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
+	num_nodes = len(G.nodes())
+	num_edges = len(G.edges())
 	cl = [node for node in MGM_G.nodes() if 'CL' in node]
 
 	with open(filename, 'a', newline='') as file:
@@ -154,55 +154,49 @@ def experiment_wsc(MGM_G, metrics, set_data, set_cost, filename):
 
 
 if __name__ == "__main__":
-
-	filesat = 'sat.csv'
-	filemsc = "msc.csv"
-	filewsc = "wsc.csv"
+	
+	filesat = 'result/sat.csv'
+	filemsc = "result/msc.csv"
+	filewsc = "result/wsc.csv"
+	filewsc2 = "result/wsc2.csv"
 	init_file(filesat, ["name","nodes","edges","time","results"])
 	init_file(filemsc, ["name","nodes","edges","time","results"])
 	init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
+	init_file(filewsc2, ["name","nodes","edges","time","result_set","result_w"])
 	
-	for n in test:
-		G, MGM, m_label, m, c, i, s = generate_graph(n)
+	for index in range(1,7):
+		for n in test:
+			G, MGM, m_label, m, c, i, s = generate_graph(n)
 
-		# CNF formula from the graph
-		formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-		experiment_sat(G, MGM, formulaG, filesat)
+			# CNF formula from the graph
+			formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+			experiment_sat(G, MGM, formulaG, filesat)
+			
+			# Set from the graph
+			set_data = tools.getListOfMetricsByCluster(MGM)
+			# m = [x for x in MGM.nodes if 'M' in x]
+			# experiment_msc(G, MGM, m, set_data, filemsc)
+
+			# Weighted set from the graph
+			set_cost = tools.getCostClList(MGM)
+			experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+
+			print("----",n,"----")
+		print("END "+str(index)+".1")
+
+		for n in testmsc:
+			G, MGM, m_label, m, c, i, s = generate_graph(n)
+			# Set from the graph
+			set_data = tools.getListOfMetricsByCluster(MGM)
+			m = [x for x in MGM.nodes if 'M' in x]
+			experiment_msc(G, MGM, m, set_data, filemsc)
+			print("----",n,"----")
+		print("END "+str(index)+".2")
 		
-		# Set from the graph
-		set_data = tools.getListOfMetricsByCluster(MGM)
-		# m = [x for x in MGM.nodes if 'M' in x]
-		# experiment_msc(G, MGM, m, set_data, filemsc)
-
-		# Weighted set from the graph
-		set_cost = tools.getCostClList(MGM)
-		experiment_wsc(MGM, m, set_data, set_cost, filewsc)
-
-		print("----",n,"----")
-	print("END EXPERIMENT 1")
-
-	for n in testmsc:
-		G, MGM, m_label, m, c, i, s = generate_graph(n)
-		# Set from the graph
-		set_data = tools.getListOfMetricsByCluster(MGM)
-		m = [x for x in MGM.nodes if 'M' in x]
-		experiment_msc(G, MGM, m, set_data, filemsc)
-		print("----",n,"----")
-	print("END EXPERIMENT 2")
-
-
-	analysis.performance_sat(filesat)
-	analysis.validation_sat(filesat)
-	analysis.performance_msc(filemsc)
-	analysis.validation_msc(filemsc)
-	analysis.performance_wsc(filewsc)
-	
-	init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
-	for n in testwsc:
-		G, MGM, m_label, m, c, i, s = generate_graph(n)
-		set_data = tools.getListOfMetricsByCluster(MGM)
-		set_cost = tools.getCostClList(MGM)
-		experiment_wsc(MGM, m, set_data, set_cost, filewsc)
-		print("----",n,"----")
-	print("END EXPERIMENT 3")
-	analysis.validation_wsc(filewsc)
+		for n in testwsc:
+			G, MGM, m_label, m, c, i, s = generate_graph(n)
+			set_data = tools.getListOfMetricsByCluster(MGM)
+			set_cost = tools.getCostClList(MGM)
+			experiment_wsc(G, MGM, m, set_data, set_cost, filewsc2)
+			print("----",n,"----")
+		print("END "+str(index)+".3")
