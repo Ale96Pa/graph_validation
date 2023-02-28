@@ -3,9 +3,10 @@ import tools
 import itertools
 import time
 import random
-from random import randint
 import networkx as nx
-import analysis
+import numpy as np
+from scipy.stats import truncnorm
+# import analysis
 
 import sat
 import min_set_cover as msc
@@ -15,6 +16,8 @@ test = [5,10,25,50,100,150,250,500,1000,2000]
 testmsc = range(2,30)
 testwsc = [2000,2005,2010,2020,2030,2050,2060,2100,2150]
 solvers = ['g41','lgl','m22','maple']
+cost_distro = ["random","normal","lognormal","binomial","poisson"]
+num_experiment = 7
 
 def init_file(filename,head):
 	with open(filename, 'w', newline='') as file:
@@ -26,7 +29,7 @@ def prepend(list, str):
 	list = [str.format(i) for i in list]
 	return(list)
 
-def generate_graph(numNodes):
+def generate_graph(numNodes, distro="random"):
 	metrics = random.sample(range(1, numNodes*2), numNodes)
 	meas_settings = random.sample(range(numNodes*2+1, numNodes*4), numNodes)
 	instruments = random.sample(range(numNodes*4+1, numNodes*6), numNodes)
@@ -62,12 +65,26 @@ def generate_graph(numNodes):
 	for x in e_is:
 		ee_is.append(('I'+str(x[0]),'S'+str(x[1])))
 
-
+	if distro == "normal":
+		randomNums = np.random.normal(scale=numNodes, size=len(meas_settings2))
+	elif distro == "lognormal":
+		randomNums = np.random.lognormal(size=len(meas_settings2))
+	elif distro == "binomial":
+		randomNums = np.random.binomial(numNodes, 0.5, size=len(meas_settings2))
+	elif distro == "poisson":
+		randomNums = np.random.poisson(numNodes,size=len(meas_settings2))
+	else:
+		randomNums = np.random.randint(1, size=len(meas_settings2))
+	# randomInts = np.round(randomNums)
+	
 	MGM = nx.DiGraph()
 	MGM.add_nodes_from(metrics2)
+	i=0
 	for cl in meas_settings2:
-		cost = randint(1, 100)
+		cost = randomNums[i]
+		#cost = randomInts[i]
 		MGM.add_node(cl, weight=cost)
+		i+=1
 	MGM.add_nodes_from(instruments2)
 	MGM.add_nodes_from(specifications2)
 	MGM.add_edges_from(ee_mc)
@@ -127,7 +144,6 @@ def experiment_msc(G, MGM_G, metrics, set_data, filename):
 		res_msc_opt = set([item for sublist in res_msc_opt for item in sublist])
 		writer.writerow(["Greedy Approach",num_nodes,num_edges,end-start,len(res_msc_opt)])
 
-
 def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
 	num_nodes = len(G.nodes())
 	num_edges = len(G.edges())
@@ -151,9 +167,33 @@ def experiment_wsc(G, MGM_G, metrics, set_data, set_cost, filename):
 		end = time.perf_counter()
 		writer.writerow(["MMG",num_nodes,num_edges,end-start,len(clusters),totalCost])
 
+def cost_distribution_wsc():
+	for distro in cost_distro:
+		filewsc = "result/cost_distribution/wsc_"+distro+".csv"	
+		init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
 
+		for index in range(1,num_experiment):
+			for n in test:
+				G, MGM, m_label, m, c, i, s = generate_graph(n)
+				set_data = tools.getListOfMetricsByCluster(MGM)
+				set_cost = tools.getCostClList(MGM)
+				experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+				print("----",index,n,"----")
+		
+		filewsc = "result/cost_distribution/wsc_"+distro+"_cut.csv"	
+		init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
+		for index in range(1,num_experiment):
+			for n in testwsc:
+				G, MGM, m_label, m, c, i, s = generate_graph(n)
+				set_data = tools.getListOfMetricsByCluster(MGM)
+				set_cost = tools.getCostClList(MGM)
+				experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+				print("----",index,n,"----")
+	
 
 if __name__ == "__main__":
+	
+	cost_distribution_wsc()
 	
 	filesat = 'result/sat.csv'
 	filemsc = "result/msc.csv"
@@ -164,7 +204,7 @@ if __name__ == "__main__":
 	init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
 	init_file(filewsc2, ["name","nodes","edges","time","result_set","result_w"])
 	
-	for index in range(1,7):
+	for index in range(1,num_experiment):
 		for n in test:
 			G, MGM, m_label, m, c, i, s = generate_graph(n)
 

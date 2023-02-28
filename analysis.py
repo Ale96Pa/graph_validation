@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 
 def performance_sat(filesat):
@@ -106,7 +107,7 @@ def validation_msc(filemsc):
     plt.savefig('plot/val_msc.png', bbox_inches='tight')
     plt.close()
 
-def performance_wsc(filewsc):
+def performance_wsc(filewsc, outimg="plot/per_wsc.png"):
     df = pd.read_csv(filewsc)
     marks = ["x","o","v","s","+","x"]
     df_grouped = df.groupby(['name'])
@@ -129,10 +130,10 @@ def performance_wsc(filewsc):
     plt.ylabel("Time (s)")
     plt.legend()
     # plt.show()
-    plt.savefig('plot/per_wsc.png', bbox_inches='tight')
+    plt.savefig(outimg, bbox_inches='tight')
     plt.close()
 
-def validation_wsc(filewsc):
+def validation_wsc(filewsc, outimg, isEntire):
     df = pd.read_csv(filewsc)
     marks = ["x","o","v","s","+","x"]
     df_grouped = df.groupby(['name'])
@@ -142,7 +143,8 @@ def validation_wsc(filewsc):
         # x = sat_df["nodes"].to_list()
         # y = sat_df["result_w"]
         sat_df_mean = sat_df.groupby(['nodes'])
-        x =[2000,2005,2010,2020,2030,2050,2060,2100,2150]
+        if isEntire: x = [5,10,25,50,100,150,250,500,1000,2000]
+        else: x =[2000,2005,2010,2020,2030,2050,2060,2100,2150]
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -155,19 +157,42 @@ def validation_wsc(filewsc):
     plt.ylabel("Cost")
     plt.legend()
     # plt.show()
-    plt.savefig('plot/val_wsc.png', bbox_inches='tight')
+    plt.savefig(outimg, bbox_inches='tight')
     plt.close()
 
 if __name__ == "__main__":
-    filesat = 'result/sat.csv'
-    filemsc = "result/msc.csv"
-    filewsc = "result/wsc.csv"
-    filewsc2 = "result/wsc2.csv"
-    performance_sat(filesat)
-    validation_sat(filesat)
+    # filesat = 'result/sat.csv'
+    # filemsc = "result/msc.csv"
+    # filewsc = "result/wsc.csv"
+    # filewsc2 = "result/wsc2.csv"
+    # performance_sat(filesat)
+    # validation_sat(filesat)
 
-    performance_msc(filemsc)
-    validation_msc(filemsc)
+    # performance_msc(filemsc)
+    # validation_msc(filemsc)
 
-    performance_wsc(filewsc)
-    validation_wsc(filewsc2)
+    # performance_wsc(filewsc)
+    # outimg = "plot/val_wsc_full.png"
+    # validation_wsc(filewsc, outimg, True)
+    # outimg = "plot/val_wsc_cut.png"
+    # validation_wsc(filewsc2, outimg, False)
+
+    ## Cost distribution
+    # filewsc = "result/cost_distribution/wsc_normal.csv"
+    # outimg = "plot/cost_distribution/val_wsc_normal_full.png"
+    # performance_wsc(filewsc, outimg)
+    # validation_wsc(filewsc, outimg, True)    
+    # filewsc = "result/cost_distribution/wsc_normal_cut.csv"
+    # outimg = "plot/cost_distribution/val_wsc_normal_cut.png"
+    # validation_wsc(filewsc, outimg, False)
+
+    root_plot = "plot/cost_distribution/"
+    root_result = "result/cost_distribution/"
+    for file in os.listdir("result/cost_distribution"):
+        outimg = root_plot+"val_"+file.split(".")[0]+".png"
+        infile = root_result+file
+        if "cut" in file:
+            validation_wsc(infile, outimg, False)
+        else:
+            performance_wsc(infile, outimg.replace("val","per"))
+            validation_wsc(infile, outimg, True)
