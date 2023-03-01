@@ -13,11 +13,12 @@ import min_set_cover as msc
 import weighted_set_cover as wsc
 
 test = [5,10,25,50,100,150,250,500,1000,2000]
-testmsc = range(2,30)
-testwsc = [2000,2005,2010,2020,2030,2050,2060,2100,2150]
+testmsc = range(2,32,2)
+testwsc = [1000,1005,1010,1020,1030,1050,1060,1100,1150]
 solvers = ['g41','lgl','m22','maple']
-cost_distro = ["random","normal","lognormal","binomial","poisson"]
-num_experiment = 7
+# cost_distro = ["uniform","normal","lognormal","binomial","poisson","geometric","stdgamma","stdnormal","triangular"]
+cost_distro = ["geometric","stdgamma","stdnormal","triangular"]
+num_experiment = 101
 
 def init_file(filename,head):
 	with open(filename, 'w', newline='') as file:
@@ -73,8 +74,18 @@ def generate_graph(numNodes, distro="random"):
 		randomNums = np.random.binomial(numNodes, 0.5, size=len(meas_settings2))
 	elif distro == "poisson":
 		randomNums = np.random.poisson(numNodes,size=len(meas_settings2))
+	elif distro == "uniform":
+		randomNums = np.random.randint(1, len(meas_settings2), size=len(meas_settings2))
+	elif distro == "geometric":
+		randomNums = np.random.geometric(0.5, size=len(meas_settings2))
+	elif distro == "stdnormal":
+		randomNums = np.random.standard_normal(size=len(meas_settings2))
+	elif distro == "stdgamma":
+		randomNums = np.random.standard_gamma(len(meas_settings2)/2, size=len(meas_settings2))
+	elif distro == "triangular":
+		randomNums = np.random.triangular(1, len(meas_settings2)/2 ,len(meas_settings2), size=len(meas_settings2))
 	else:
-		randomNums = np.random.randint(1, size=len(meas_settings2))
+		randomNums = np.random.randint(1, 100, size=len(meas_settings2))
 	# randomInts = np.round(randomNums)
 	
 	MGM = nx.DiGraph()
@@ -174,69 +185,86 @@ def cost_distribution_wsc():
 
 		for index in range(1,num_experiment):
 			for n in test:
-				G, MGM, m_label, m, c, i, s = generate_graph(n)
+				G, MGM, m_label, m, c, i, s = generate_graph(n,distro)
 				set_data = tools.getListOfMetricsByCluster(MGM)
 				set_cost = tools.getCostClList(MGM)
 				experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
-				print("----",index,n,"----")
+				print(distro," 1----",index,n,"----")
 		
 		filewsc = "result/cost_distribution/wsc_"+distro+"_cut.csv"	
 		init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
 		for index in range(1,num_experiment):
 			for n in testwsc:
-				G, MGM, m_label, m, c, i, s = generate_graph(n)
+				G, MGM, m_label, m, c, i, s = generate_graph(n,distro)
 				set_data = tools.getListOfMetricsByCluster(MGM)
 				set_cost = tools.getCostClList(MGM)
 				experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
-				print("----",index,n,"----")
+				print(distro," 2----",index,n,"----")
 	
 
 if __name__ == "__main__":
 	
-	cost_distribution_wsc()
-	
-	filesat = 'result/sat.csv'
-	filemsc = "result/msc.csv"
-	filewsc = "result/wsc.csv"
-	filewsc2 = "result/wsc2.csv"
-	init_file(filesat, ["name","nodes","edges","time","results"])
-	init_file(filemsc, ["name","nodes","edges","time","results"])
-	init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
-	init_file(filewsc2, ["name","nodes","edges","time","result_set","result_w"])
+	# filesat = 'result/sat.csv'
+	# filemsc = "result/msc.csv"
+	# filewsc = "result/wsc.csv"
+	# filewsc2 = "result/wsc2.csv"
+	# init_file(filesat, ["name","nodes","edges","time","results"])
+	# init_file(filemsc, ["name","nodes","edges","time","results"])
+	# init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
+	# init_file(filewsc2, ["name","nodes","edges","time","result_set","result_w"])
 	
 	for index in range(1,num_experiment):
-		for n in test:
-			G, MGM, m_label, m, c, i, s = generate_graph(n)
+		# for n in test:
+		# 	G, MGM, m_label, m, c, i, s = generate_graph(n)
 
-			# CNF formula from the graph
-			formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-			experiment_sat(G, MGM, formulaG, filesat)
+		# 	# CNF formula from the graph
+		# 	formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+		# 	experiment_sat(G, MGM, formulaG, filesat)
 			
-			# Set from the graph
-			set_data = tools.getListOfMetricsByCluster(MGM)
-			# m = [x for x in MGM.nodes if 'M' in x]
-			# experiment_msc(G, MGM, m, set_data, filemsc)
+		# 	# Set from the graph
+		# 	set_data = tools.getListOfMetricsByCluster(MGM)
+		# 	# m = [x for x in MGM.nodes if 'M' in x]
+		# 	# experiment_msc(G, MGM, m, set_data, filemsc)
 
-			# Weighted set from the graph
-			set_cost = tools.getCostClList(MGM)
-			experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+		# 	# Weighted set from the graph
+		# 	set_cost = tools.getCostClList(MGM)
+		# 	experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
 
-			print("----",n,"----")
-		print("END "+str(index)+".1")
+		# 	print("1----",index,n,"----")
 
-		for n in testmsc:
-			G, MGM, m_label, m, c, i, s = generate_graph(n)
-			# Set from the graph
-			set_data = tools.getListOfMetricsByCluster(MGM)
-			m = [x for x in MGM.nodes if 'M' in x]
-			experiment_msc(G, MGM, m, set_data, filemsc)
-			print("----",n,"----")
-		print("END "+str(index)+".2")
+		# for n in testmsc:
+		# 	G, MGM, m_label, m, c, i, s = generate_graph(n)
+		# 	# Set from the graph
+		# 	set_data = tools.getListOfMetricsByCluster(MGM)
+		# 	m = [x for x in MGM.nodes if 'M' in x]
+		# 	experiment_msc(G, MGM, m, set_data, filemsc)
+		# 	print("2----",index,n,"----")
 		
-		for n in testwsc:
-			G, MGM, m_label, m, c, i, s = generate_graph(n)
-			set_data = tools.getListOfMetricsByCluster(MGM)
-			set_cost = tools.getCostClList(MGM)
-			experiment_wsc(G, MGM, m, set_data, set_cost, filewsc2)
-			print("----",n,"----")
-		print("END "+str(index)+".3")
+		# for n in testwsc:
+		# 	G, MGM, m_label, m, c, i, s = generate_graph(n)
+		# 	set_data = tools.getListOfMetricsByCluster(MGM)
+		# 	set_cost = tools.getCostClList(MGM)
+		# 	experiment_wsc(G, MGM, m, set_data, set_cost, filewsc2)
+		# 	print("3----",index,n,"----")
+
+		## COST DISTRIBUTION
+		for distro in cost_distro:
+			filewsc = "result/cost_distribution/wsc_"+distro+".csv"	
+			init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
+			for n in test:
+				G, MGM, m_label, m, c, i, s = generate_graph(n,distro)
+				set_data = tools.getListOfMetricsByCluster(MGM)
+				set_cost = tools.getCostClList(MGM)
+				experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+				print(distro," 1----",index,n,"----")
+			
+			filewsc = "result/cost_distribution/wsc_"+distro+"_cut.csv"	
+			init_file(filewsc, ["name","nodes","edges","time","result_set","result_w"])
+			for n in testwsc:
+				G, MGM, m_label, m, c, i, s = generate_graph(n,distro)
+				set_data = tools.getListOfMetricsByCluster(MGM)
+				set_cost = tools.getCostClList(MGM)
+				experiment_wsc(G, MGM, m, set_data, set_cost, filewsc)
+				print(distro," 2----",index,n,"----")
+	
+	# cost_distribution_wsc()

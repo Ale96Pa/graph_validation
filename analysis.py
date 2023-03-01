@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from generate_synthetic import test,testmsc,testwsc
 
 
 def performance_sat(filesat):
@@ -13,7 +14,7 @@ def performance_sat(filesat):
         # x = sat_df["nodes"].to_list()
         # y = sat_df["time"]
         sat_df_mean = sat_df.groupby(['nodes'])
-        x =[5,10,25,50,100,150,250,500,1000,2000]
+        x = test
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -22,7 +23,7 @@ def performance_sat(filesat):
         i+=1
     
     plt.title("Performance evaluation of Metrics Computability")
-    plt.xlabel("Number of nodes")
+    plt.xlabel("Number of metrics")
     plt.ylabel("Time (s)")
     plt.legend()
     # plt.show()
@@ -39,7 +40,7 @@ def validation_sat(filesat):
         # x = sat_df["nodes"].to_list()
         # y = sat_df["results"]
         sat_df_mean = sat_df.groupby(['nodes'])
-        x =[5,10,25,50,100,150,250,500,1000,2000]
+        x = test
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -48,7 +49,7 @@ def validation_sat(filesat):
         i+=1
     
     plt.title("Performance evaluation of Metrics Computability")
-    plt.xlabel("Number of nodes")
+    plt.xlabel("Number of metrics")
     plt.ylabel("Output")
     plt.legend()
     # plt.show()
@@ -65,7 +66,7 @@ def performance_msc(filemsc):
         sat_df_mean = sat_df.groupby(['nodes'])
         # x = sat_df["nodes"].to_list()
         # y = sat_df["time"]
-        x =range(2,30)
+        x = testmsc
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -74,7 +75,7 @@ def performance_msc(filemsc):
         i+=1
     
     plt.title("Performance evaluation of Instruments Redundancy")
-    plt.xlabel("Number of nodes")
+    plt.xlabel("Number of metrics")
     plt.ylabel("Time (s)")
     plt.legend()
     # plt.show()
@@ -91,7 +92,7 @@ def validation_msc(filemsc):
         # x = sat_df["nodes"].to_list()
         # y = sat_df["results"]
         sat_df_mean = sat_df.groupby(['nodes'])
-        x =range(2,30)
+        x = testmsc
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -100,7 +101,7 @@ def validation_msc(filemsc):
         i+=1
     
     plt.title("Validation of Instruments Redundancy")
-    plt.xlabel("Number of nodes")
+    plt.xlabel("Number of metrics")
     plt.ylabel("Number selected sets")
     plt.legend()
     # plt.show()
@@ -117,7 +118,7 @@ def performance_wsc(filewsc, outimg="plot/per_wsc.png"):
         # x = sat_df["nodes"].to_list()
         # y = sat_df["time"]
         sat_df_mean = sat_df.groupby(['nodes'])
-        x =[5,10,25,50,100,150,250,500,1000,2000]
+        x = test
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -126,7 +127,7 @@ def performance_wsc(filewsc, outimg="plot/per_wsc.png"):
         i+=1
     
     plt.title("Performance evaluation of Cost-Bounded Constraint")
-    plt.xlabel("Number of nodes")
+    plt.xlabel("Number of metrics")
     plt.ylabel("Time (s)")
     plt.legend()
     # plt.show()
@@ -143,8 +144,8 @@ def validation_wsc(filewsc, outimg, isEntire):
         # x = sat_df["nodes"].to_list()
         # y = sat_df["result_w"]
         sat_df_mean = sat_df.groupby(['nodes'])
-        if isEntire: x = [5,10,25,50,100,150,250,500,1000,2000]
-        else: x =[2000,2005,2010,2020,2030,2050,2060,2100,2150]
+        if isEntire: x = test
+        else: x = testwsc
         y = []
         for subgroup, subitme in sat_df_mean:
             subsat_df = sat_df_mean.get_group(subgroup)
@@ -153,7 +154,7 @@ def validation_wsc(filewsc, outimg, isEntire):
         i+=1
     
     plt.title("Validation of Cost-Bounded Constraint")
-    plt.xlabel("Number of nodes")
+    plt.xlabel("Number of metrics")
     plt.ylabel("Cost")
     plt.legend()
     # plt.show()
@@ -161,31 +162,23 @@ def validation_wsc(filewsc, outimg, isEntire):
     plt.close()
 
 if __name__ == "__main__":
-    # filesat = 'result/sat.csv'
-    # filemsc = "result/msc.csv"
-    # filewsc = "result/wsc.csv"
-    # filewsc2 = "result/wsc2.csv"
-    # performance_sat(filesat)
-    # validation_sat(filesat)
+    filesat = 'result/sat.csv'
+    filemsc = "result/msc.csv"
+    filewsc = "result/wsc.csv"
+    filewsc2 = "result/wsc2.csv"
+    performance_sat(filesat)
+    validation_sat(filesat)
 
-    # performance_msc(filemsc)
-    # validation_msc(filemsc)
+    performance_msc(filemsc)
+    validation_msc(filemsc)
 
-    # performance_wsc(filewsc)
-    # outimg = "plot/val_wsc_full.png"
-    # validation_wsc(filewsc, outimg, True)
-    # outimg = "plot/val_wsc_cut.png"
-    # validation_wsc(filewsc2, outimg, False)
+    performance_wsc(filewsc)
+    outimg = "plot/val_wsc.png"
+    validation_wsc(filewsc, outimg, True)
+    outimg = "plot/val_wsc_cut.png"
+    validation_wsc(filewsc2, outimg, False)
 
     ## Cost distribution
-    # filewsc = "result/cost_distribution/wsc_normal.csv"
-    # outimg = "plot/cost_distribution/val_wsc_normal_full.png"
-    # performance_wsc(filewsc, outimg)
-    # validation_wsc(filewsc, outimg, True)    
-    # filewsc = "result/cost_distribution/wsc_normal_cut.csv"
-    # outimg = "plot/cost_distribution/val_wsc_normal_cut.png"
-    # validation_wsc(filewsc, outimg, False)
-
     root_plot = "plot/cost_distribution/"
     root_result = "result/cost_distribution/"
     for file in os.listdir("result/cost_distribution"):
@@ -194,5 +187,4 @@ if __name__ == "__main__":
         if "cut" in file:
             validation_wsc(infile, outimg, False)
         else:
-            performance_wsc(infile, outimg.replace("val","per"))
             validation_wsc(infile, outimg, True)
