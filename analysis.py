@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import os
 from generate_synthetic import test,testmsc,testwsc,topologies
 
-
 def performance_sat(filesat, outimg):
     df = pd.read_csv(filesat)
     marks = [".","o","v","s","+","x"]
@@ -11,8 +10,6 @@ def performance_sat(filesat, outimg):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        # x = sat_df["nodes"].to_list()
-        # y = sat_df["time"]
         sat_df_mean = sat_df.groupby(['nodes'])
         x = test
         y = []
@@ -42,8 +39,6 @@ def validation_sat(filesat, outimg):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        # x = sat_df["nodes"].to_list()
-        # y = sat_df["results"]
         sat_df_mean = sat_df.groupby(['nodes'])
         x = test
         y = []
@@ -74,8 +69,6 @@ def performance_msc(filemsc, outimg):
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
         sat_df_mean = sat_df.groupby(['nodes'])
-        # x = sat_df["nodes"].to_list()
-        # y = sat_df["time"]
         x = testmsc
         y = []
         mins = []
@@ -104,8 +97,6 @@ def validation_msc(filemsc, outimg):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        # x = sat_df["nodes"].to_list()
-        # y = sat_df["results"]
         sat_df_mean = sat_df.groupby(['nodes'])
         x = testmsc
         y = []
@@ -134,8 +125,6 @@ def performance_wsc(filewsc, outimg="plot/per_wsc.png"):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        # x = sat_df["nodes"].to_list()
-        # y = sat_df["time"]
         sat_df_mean = sat_df.groupby(['nodes'])
         x = test
         y = []
@@ -165,8 +154,6 @@ def validation_wsc(filewsc, outimg, isEntire):
     i=0
     for group, item in df_grouped:
         sat_df = df_grouped.get_group(group)
-        # x = sat_df["nodes"].to_list()
-        # y = sat_df["result_w"]
         sat_df_mean = sat_df.groupby(['nodes'])
         if isEntire: x = test
         else: x = testwsc
@@ -206,9 +193,8 @@ def validation_delta_wsc(filewsc, outimg, isEntire):
 
             dic_mean[name].append(sat_df_mean.mean())
             dic_min[name].append(sat_df_mean.min())
-            dic_max[name].append(sat_df_mean.max())
-        
-        
+            dic_max[name].append(sat_df_mean.max())    
+    
     if isEntire: x = test
     else: x = testwsc
     y = []
@@ -221,15 +207,20 @@ def validation_delta_wsc(filewsc, outimg, isEntire):
     name1max = dic_max[names[0]]
     name2max = dic_max[names[1]]
     for j in range(0,len(name1mean)):
-        delta = name1mean[j]-name2mean[j]
-        mins_delta = name1min[j]-name2min[j]
-        maxs_delta = name1max[j]-name2max[j]
+        if names[0] == "MMG":
+            delta = name1mean[j]-name2mean[j]
+            mins_delta = name1min[j]-name2min[j]
+            maxs_delta = name1max[j]-name2max[j]
+        else:
+            delta = name2mean[j]-name1mean[j]
+            mins_delta = name2min[j]-name1min[j]
+            maxs_delta = name2max[j]-name1max[j]
         y.append(delta)
         mins.append(mins_delta)
         maxs.append(maxs_delta)
 
-    plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
-    plt.fill_between(x, mins, maxs, alpha=.5)
+    plt.plot(x, y, label = ["cost(MMG)-cost(heuristic)"], marker=marks[i])
+    # plt.fill_between(x, mins, maxs, alpha=.5)
     i+=1
 
     plt.title("Validation of Cost-Bounded Constraint")
@@ -244,7 +235,7 @@ def benchmark_topology(topology):
     filesat = "result/topology_"+topology+"/sat.csv"
     filemsc = "result/topology_"+topology+"/msc.csv"
     filewsc = "result/topology_"+topology+"/wsc.csv"
-    filewsc2 = "result/topology_"+topology+"/wsc_cut.csv"
+    # filewsc2 = "result/topology_"+topology+"/wsc_cut.csv"
     outimg = "plot/topology_"+topology+"/per_sat.png"
     performance_sat(filesat, outimg)
     outimg = "plot/topology_"+topology+"/val_sat.png"
@@ -262,10 +253,10 @@ def benchmark_topology(topology):
     outimg = "plot/topology_"+topology+"/delta_val_wsc.png"
     validation_delta_wsc(filewsc,outimg,True)
 
-    outimg = "plot/topology_"+topology+"/val_wsc_cut.png"
-    validation_wsc(filewsc2, outimg, False)
-    outimg = "plot/topology_"+topology+"/delta_val_wsc_cut.png"
-    validation_delta_wsc(filewsc2,outimg,False)
+    # outimg = "plot/topology_"+topology+"/val_wsc_cut.png"
+    # validation_wsc(filewsc2, outimg, False)
+    # outimg = "plot/topology_"+topology+"/delta_val_wsc_cut.png"
+    # validation_delta_wsc(filewsc2,outimg,False)
 
     ## Cost distribution
     root_plot = "plot/topology_"+topology+"/cost_distribution/"
