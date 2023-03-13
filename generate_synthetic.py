@@ -17,7 +17,7 @@ solvers = ['g41','lgl','m22','maple']
 # cost_distro = ["uniform","normal","lognormal","binomial","poisson","geometric","stdgamma","stdnormal","triangular"]
 cost_distro = ["lognormal","binomial","poisson","geometric","stdgamma","triangular"]
 num_experiment = 50
-topologies = ["random"]#,"onepath","complete"]
+topologies = ["onepath","complete","random"]
 
 def init_file(filename,head):
 	with open(filename, 'w', newline='') as file:
