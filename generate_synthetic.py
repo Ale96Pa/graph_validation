@@ -121,7 +121,7 @@ def generate_graph(numNodes, distro="random", topology="random"):
 	return B, MGM, metrics2, metrics, meas_settings, instruments, specifications
 
 
-def experiment_sat(G, MGM_G, formulaG, filename):
+def experiment_sat(G, MGM_G, filename):
 	num_nodes = len(G.nodes())
 	num_edges = len(G.edges())
 	density = nx.density(G)
@@ -129,25 +129,23 @@ def experiment_sat(G, MGM_G, formulaG, filename):
 	with open(filename, 'a', newline='') as file:
 		writer = csv.writer(file)
 		
-		start = time.time()
-		result = sat.solve_sat(formulaG,'cdl')
-		end = time.time()
-		writer.writerow(['cdl',num_nodes,num_edges,density,end-start,1])
+		start1 = time.perf_counter()
+		result_paths = sat.solve_sat(MGM_G)
+		end1 = time.perf_counter()
+		writer.writerow(['path_gen',num_nodes,num_edges,density,end1-start1,len(result_paths)])
 
-		for s in solvers:
-			start = time.time()
-			r = sat.solve_sat(formulaG,s)
-			end = time.time()
-			if r == result: res=1
-			else: res=0
-			writer.writerow([s,num_nodes,num_edges,density,end-start,res])
+		# for s in solvers:
+		# 	start = time.time()
+		# 	r = sat.solve_sat(formulaG,s)
+		# 	end = time.time()
+		# 	if r == result: res=1
+		# 	else: res=0
+		# 	writer.writerow([s,num_nodes,num_edges,density,end-start,res])
 		
-		start = time.time()
+		start2 = time.perf_counter()
 		res_mgm = sat.metrics_deployability(MGM_G)
-		end = time.time()
-		if res_mgm == result: res=1
-		else: res=0
-		writer.writerow(["MMG",num_nodes,num_edges,density,end-start,res])
+		end2 = time.perf_counter()
+		writer.writerow(["MMG",num_nodes,num_edges,density,end2-start2,len(res_mgm)])
 
 def experiment_msc(G, MGM_G, metrics, set_data, filename):
 	num_nodes = len(G.nodes())
@@ -193,48 +191,49 @@ def experiment_wsc(G, MGM_G, set_data, set_cost, filename):
 
 def experimental_topology(topology):
 	filesat = "result/topology_"+topology+"/sat.csv"
-	filemsc = "result/topology_"+topology+"/msc.csv"
-	filewsc = "result/topology_"+topology+"/wsc.csv"
+	# filemsc = "result/topology_"+topology+"/msc.csv"
+	# filewsc = "result/topology_"+topology+"/wsc.csv"
 	# filewsc2 = "result/topology_"+topology+"/wsc_cut.csv"
 	init_file(filesat, ["name","nodes","edges","density","time","results"])
-	init_file(filemsc, ["name","nodes","edges","density","time","results"])
-	init_file(filewsc, ["name","nodes","edges","density","time","result_set","result_w"])
+	# init_file(filemsc, ["name","nodes","edges","density","time","results"])
+	# init_file(filewsc, ["name","nodes","edges","density","time","result_set","result_w"])
 	# init_file(filewsc2, ["name","nodes","edges","density","time","result_set","result_w"])
 	filewsc_distro = []
 	# filewsc_distro_cut = []
-	for i in range(0,len(cost_distro)):
-		filewsc_distro.append("result/topology_"+topology+"/cost_distribution/wsc_"+cost_distro[i]+".csv")
-		# filewsc_distro_cut.append("result/topology_"+topology+"/cost_distribution/wsc_"+cost_distro[i]+"_cut.csv")
-		init_file(filewsc_distro[i], ["name","nodes","edges","density","time","result_set","result_w"])
-		# init_file(filewsc_distro_cut[i], ["name","nodes","edges","density","time","result_set","result_w"])
+	# for i in range(0,len(cost_distro)):
+	# 	filewsc_distro.append("result/topology_"+topology+"/cost_distribution/wsc_"+cost_distro[i]+".csv")
+	# 	# filewsc_distro_cut.append("result/topology_"+topology+"/cost_distribution/wsc_"+cost_distro[i]+"_cut.csv")
+	# 	init_file(filewsc_distro[i], ["name","nodes","edges","density","time","result_set","result_w"])
+	# 	# init_file(filewsc_distro_cut[i], ["name","nodes","edges","density","time","result_set","result_w"])
 	
 	for index in range(1,num_experiment):
 		for n in test:
 			G, MGM, m_label, m, c, i, s = generate_graph(n, topology)
 
 			## CNF formula from the graph
-			formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
-			experiment_sat(G, MGM, formulaG, filesat)
+			# formulaG = sat.convert_graph_to_cnf(G, m, c, i, s)
+			experiment_sat(G, MGM, filesat)
 	
 			## Weighted set from the graph
-			set_data = tools.getListOfMetricsByCluster(MGM)
-			set_cost = tools.getCostClList(MGM)
-			experiment_wsc(G, MGM, set_data, set_cost, filewsc)
+			# set_data = tools.getListOfMetricsByCluster(MGM)
+			# set_cost = tools.getCostClList(MGM)
+			# experiment_wsc(G, MGM, set_data, set_cost, filewsc)
 
-			for file_i in range(0,len(cost_distro)):
-				G, MGM, m_label, m, c, i, s = generate_graph(n,cost_distro[file_i], topology)
-				set_data = tools.getListOfMetricsByCluster(MGM)
-				set_cost = tools.getCostClList(MGM)
-				experiment_wsc(G, MGM, set_data, set_cost, filewsc_distro[file_i])
+
+			# for file_i in range(0,len(cost_distro)):
+			# 	G, MGM, m_label, m, c, i, s = generate_graph(n,cost_distro[file_i], topology)
+			# 	set_data = tools.getListOfMetricsByCluster(MGM)
+			# 	set_cost = tools.getCostClList(MGM)
+			# 	experiment_wsc(G, MGM, set_data, set_cost, filewsc_distro[file_i])
 
 			# print("1----",index,n,"----")
 
-		for n in testmsc:
-			G, MGM, m_label, m, c, i, s = generate_graph(n, topology)
-			set_data = tools.getListOfMetricsByCluster(MGM)
-			m = [x for x in MGM.nodes if 'M' in x]
-			experiment_msc(G, MGM, m, set_data, filemsc)
-			# print("2----",index,n,"----")
+		# for n in testmsc:
+		# 	G, MGM, m_label, m, c, i, s = generate_graph(n, topology)
+		# 	set_data = tools.getListOfMetricsByCluster(MGM)
+		# 	m = [x for x in MGM.nodes if 'M' in x]
+		# 	experiment_msc(G, MGM, m, set_data, filemsc)
+		# 	# print("2----",index,n,"----")
 		
 		# for n in testwsc:
 		# 	G, MGM, m_label, m, c, i, s = generate_graph(n, topology)

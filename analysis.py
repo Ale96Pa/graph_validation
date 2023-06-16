@@ -20,7 +20,9 @@ def performance_sat(filesat, outimg):
             y.append(subsat_df["time"].mean())
             mins.append(subsat_df["time"].min())
             maxs.append(subsat_df["time"].max())
-        plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
+        label = sat_df["name"].to_list()[0]
+        if sat_df["name"].to_list()[0] == "path_gen": label = "path_existence"
+        plt.plot(x, y, label = label, marker=marks[i])
         plt.fill_between(x, mins, maxs, alpha=.5)
         i+=1
     
@@ -49,11 +51,13 @@ def validation_sat(filesat, outimg):
             y.append(subsat_df["results"].mean())
             mins.append(subsat_df["time"].min())
             maxs.append(subsat_df["time"].max())
-        plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i])
+        plt.plot(x, y, label = sat_df["name"].to_list()[0], marker=marks[i+1])
+        plt.plot(x, y, label = "path_existence", marker=marks[i])
         plt.fill_between(x, mins, maxs, alpha=.5)
         i+=1
+        break
     
-    plt.title("Performance evaluation of Metrics Computability")
+    plt.title("Validation of Metrics Computability")
     plt.xlabel("Number of metrics")
     plt.ylabel("Output")
     plt.legend()
@@ -241,38 +245,38 @@ def benchmark_topology(topology):
     outimg = "plot/topology_"+topology+"/val_sat.png"
     validation_sat(filesat, outimg)
 
-    outimg = "plot/topology_"+topology+"/per_msc.png"
-    performance_msc(filemsc, outimg)
-    outimg = "plot/topology_"+topology+"/val_msc.png"
-    validation_msc(filemsc, outimg)
+    # outimg = "plot/topology_"+topology+"/per_msc.png"
+    # performance_msc(filemsc, outimg)
+    # outimg = "plot/topology_"+topology+"/val_msc.png"
+    # validation_msc(filemsc, outimg)
 
-    outimg = "plot/topology_"+topology+"/per_wsc.png"
-    performance_wsc(filewsc, outimg)
-    outimg = "plot/topology_"+topology+"/val_wsc.png"
-    validation_wsc(filewsc, outimg, True)
-    outimg = "plot/topology_"+topology+"/delta_val_wsc.png"
-    validation_delta_wsc(filewsc,outimg,True)
+    # outimg = "plot/topology_"+topology+"/per_wsc.png"
+    # performance_wsc(filewsc, outimg)
+    # outimg = "plot/topology_"+topology+"/val_wsc.png"
+    # validation_wsc(filewsc, outimg, True)
+    # outimg = "plot/topology_"+topology+"/delta_val_wsc.png"
+    # validation_delta_wsc(filewsc,outimg,True)
 
-    # outimg = "plot/topology_"+topology+"/val_wsc_cut.png"
-    # validation_wsc(filewsc2, outimg, False)
-    # outimg = "plot/topology_"+topology+"/delta_val_wsc_cut.png"
-    # validation_delta_wsc(filewsc2,outimg,False)
+#    # outimg = "plot/topology_"+topology+"/val_wsc_cut.png"
+#    # validation_wsc(filewsc2, outimg, False)
+#    # outimg = "plot/topology_"+topology+"/delta_val_wsc_cut.png"
+#    # validation_delta_wsc(filewsc2,outimg,False)
 
-    ## Cost distribution
-    root_plot = "plot/topology_"+topology+"/cost_distribution/"
-    root_result = "result/topology_"+topology+"/cost_distribution/"
-    for file in os.listdir("result/topology_"+topology+"/cost_distribution"):
-        outimg = root_plot+"val_"+file.split(".")[0]+".png"
-        infile = root_result+file
-        if "cut" in file:
-            validation_wsc(infile, outimg, False)
-        else:
-            validation_wsc(infile, outimg, True)
-        outimg = root_plot+"delta_val_"+file.split(".")[0]+".png"
-        if "cut" in file:
-            validation_delta_wsc(infile, outimg, False)
-        else:
-            validation_delta_wsc(infile, outimg, True)
+    # ## Cost distribution
+    # root_plot = "plot/topology_"+topology+"/cost_distribution/"
+    # root_result = "result/topology_"+topology+"/cost_distribution/"
+    # for file in os.listdir("result/topology_"+topology+"/cost_distribution"):
+    #     outimg = root_plot+"val_"+file.split(".")[0]+".png"
+    #     infile = root_result+file
+    #     if "cut" in file:
+    #         validation_wsc(infile, outimg, False)
+    #     else:
+    #         validation_wsc(infile, outimg, True)
+    #     outimg = root_plot+"delta_val_"+file.split(".")[0]+".png"
+    #     if "cut" in file:
+    #         validation_delta_wsc(infile, outimg, False)
+    #     else:
+    #         validation_delta_wsc(infile, outimg, True)
 
 
 if __name__ == "__main__":

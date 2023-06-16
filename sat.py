@@ -24,9 +24,20 @@ def convert_graph_to_cnf(G, M, C, I, S):
 
     return graph.negate()
 
-def solve_sat(cnf, solv_type):
-    with Solver(name=solv_type, bootstrap_with=cnf) as solver:
-        return not solver.solve()
+# def solve_sat(cnf, solv_type):
+#     with Solver(name=solv_type, bootstrap_with=cnf) as solver:
+#         return not solver.solve()
+
+def solve_sat(MGM):
+    valid_metrics = []
+    vM	= [node for node in MGM.nodes() if 'M' in node]
+    for n in vM:
+        isValid=False
+        for edge in nx.dfs_edges(MGM, source=n):
+            if "S" in edge[1]: isValid = True
+        if isValid: valid_metrics.append(n)
+    return valid_metrics
+                
     
 def metrics_deployability(MGM):
     wrongCL = set()
@@ -34,6 +45,7 @@ def metrics_deployability(MGM):
     vIN = [node for node in MGM.nodes() if 'I' in node]
     vM	= [node for node in MGM.nodes() if 'M' in node]
     vCL = [node for node in MGM.nodes() if 'CL' in node]
+    validMetrics = vM
 
     for inp in vIN:
         if MGM.out_degree(inp) == 0:
@@ -48,9 +60,11 @@ def metrics_deployability(MGM):
     for mt in vM:
         if MGM.out_degree(mt) == 0:
             MGM.remove_node(mt)
-            return 0
+            validMetrics.remove(mt)
+            # return 0
     
     for cl in vCL:
         if MGM.in_degree(cl) == 0:
             MGM.remove_node(cl)
-    return 1
+    # return 1
+    return validMetrics
